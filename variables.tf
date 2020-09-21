@@ -6,14 +6,14 @@ variable "name" {
 
 # VPC Variables
 variable "vpc_cidr" {
-  type = string
+  type        = string
   description = "The CIDR block for the VPC."
 }
 
 variable "instance_tenancy" {
-  type = string
+  type        = string
   description = "A tenancy option for instances launched into the VPC."
-  default = "default"
+  default     = "default"
 }
 
 variable "vpc_tags" {
@@ -22,60 +22,44 @@ variable "vpc_tags" {
   default     = {}
 }
 
-variable "endpoints" {
-  default = []
+# Subnet Variables
+variable "availability_zone" {
+  description = "The AZ for the subnet"
+  type = list(string)
 }
 
-# Subnet Variables
 variable "subnet_bits" {
   default = -1
 }
 
 variable "subnets_byname" {
+  description = "The name of the subnets you want to create. Each name will create a new subnet. The subnets will be divided into 8 equally-sized if `subnet_bits` isn't changed"
   type    = list(string)
   default = []
 }
 
 variable "subnets_bybits" {
-  type = list(object({name=string,bits=number,net=number}))
+  description = "List of object to create your subnet. This will create subnet based on bits and net set by the user."
+  type    = list(object({ name = string, bits = number, net = number }))
   default = []
 }
 
 variable "subnets_bycidr" {
-  type = list(object({name=string,cidr=string}))
-  default = []
-}
-
-variable "subnets_without_stdsg" {
-  type = list(string)
+  description = "List of object to create your subnet. This will create subnets based cidr set by the user."
+  type    = list(object({ name = string, cidr = string }))
   default = []
 }
 
 variable "public_subnets" {
+  description = "The names of which subnets you want to set as public subnets."
   default = []
-  type = list(string)
+  type    = list(string)
 }
 
 variable "bastion_subnets" {
+  description = "The name of the subnet which you want to host your bastion host within."
   default = []
-  type = list(string)
-}
-
-variable "bastion_cidr_blocks" {
-  default = ["0.0.0.0/0"]
-  type = list(string)
-}
-
-variable "operating_system" {
-  description = "The Operating Systems that the machines within the subnets will run on. Opens traffic for SSH or RDP communication within the VPC."
-  type = string
-  default = ""
-}
-
-variable "aws_security_group_tags" {
-  description = "Additional tags for subnets standard security groups"
-  type        = map(string)
-  default     = {}
+  type    = list(string)
 }
 
 # Internet Gateway
@@ -90,3 +74,4 @@ variable "route_table_public_tags" {
   type        = map(string)
   default     = {}
 }
+

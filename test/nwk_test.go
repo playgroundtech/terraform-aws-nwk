@@ -19,7 +19,6 @@ import (
 // Therefore there is no t.Parallel() function in this test-suite.
 // Test TestNwkBastion is taking advantage of goroutines to speed up testing.
 
-
 func testSSHAgentToPublicHost(t *testing.T, terraformOptions *terraform.Options, keyPair *aws.Ec2Keypair, wg *sync.WaitGroup) {
 	// Run `terraform output` to get the value of an output variable
 	publicInstanceIP := terraform.Output(t, terraformOptions, "public_instance_ip")
@@ -70,8 +69,8 @@ func TestNwkBasic(t *testing.T) {
 		TerraformDir: "../test/nwk_basic",
 
 		Vars: map[string]interface{}{
-			"name":	name,
-			"vpc_cidr": "10.0.0.0/16",
+			"name":           name,
+			"vpc_cidr":       "10.0.0.0/16",
 			"subnets_byname": []string{"test-basic-nwk-one", "test-basic-nwk-two", "test-basic-nwk-three"},
 		},
 	}
@@ -93,7 +92,7 @@ func TestNwkBasic(t *testing.T) {
 	}
 }
 
-func TestNwkBastion(t *testing.T)  {
+func TestNwkBastion(t *testing.T) {
 
 	testFolder := "../test/nwk_bastion_host"
 
@@ -114,12 +113,11 @@ func TestNwkBastion(t *testing.T)  {
 		TerraformDir: testFolder,
 
 		Vars: map[string]interface{}{
-			"name":	name,
-			"vpc_cidr": "10.0.0.0/16",
-			"subnets_byname": []string{"test-bastion-nwk-one", "test-bastion-nwk-two", "test-basic-bastion-three", "test-basic-bastion-four", "test-basic-bastion-five"},
-			"bastion_subnets": "test-bastion-nwk-one",
-			"operating_system": "linux",
-			"key_pair_name": keyPairName,
+			"name":             name,
+			"vpc_cidr":         "10.0.0.0/16",
+			"subnets_byname":   []string{"test-bastion-nwk-one", "test-bastion-nwk-two", "test-basic-bastion-three", "test-basic-bastion-four", "test-basic-bastion-five"},
+			"bastion_subnets":  "test-bastion-nwk-one",
+			"key_pair_name":    keyPairName,
 		},
 	}
 
@@ -148,26 +146,18 @@ func TestNwkBastion(t *testing.T)  {
 	wg.Wait()
 }
 
-func TestNwkNoStdsg(t *testing.T) {
+func TestNwkByBits(t *testing.T) {
 
-	testFolder := "../test/nwk_no_stdsg"
-	// Create a random unique ID for the VPC
 	name := random.UniqueId()
 
-	// AWS Region
-	awsRegion := "eu-north-1"
-
 	terraformOptions := &terraform.Options{
-		TerraformDir: testFolder,
+		TerraformDir: "../test/nwk_bybits",
 
 		Vars: map[string]interface{}{
-			"name": name,
-			"vpc_cidr": "10.0.0.0/24",
-			"subnets_byname": []string{"test-service-no-stdsg-one", "test-service-stdsg-two"},
-			"subnets_without_stdsg": []string{"test-service-stdsg-one"},
+			"name":           name,
+			"vpc_cidr":       "10.0.0.0/16",
 		},
 	}
-
 	defer terraform.Destroy(t, terraformOptions)
 	terraform.InitAndApply(t, terraformOptions)
 
@@ -175,14 +165,44 @@ func TestNwkNoStdsg(t *testing.T) {
 	vpcId := terraform.Output(t, terraformOptions, "vpc_id")
 
 	// Get Subnets for VPC
-	subnets := aws.GetSubnetsForVpc(t, vpcId, awsRegion)
+	subnets := aws.GetSubnetsForVpc(t, vpcId, "eu-north-1")
 
 	// Makes sure that all the subnets created is associated with the vpc, no more or less should be attached to it.
-	require.Equal(t, 2, len(subnets))
+	require.Equal(t, 4, len(subnets))
 
 	// Checks that all the subnets are marked as private subnets
 	for subnet := range subnets {
-		assert.False(t, aws.IsPublicSubnet(t, fmt.Sprint(subnet), awsRegion))
+		assert.False(t, aws.IsPublicSubnet(t, fmt.Sprint(subnet), "eu-north-1"))
+	}
+}
+
+func TestNwkByCidr(t *testing.T) {
+
+	name := random.UniqueId()
+
+	terraformOptions := &terraform.Options{
+		TerraformDir: "../test/nwk_bycidr",
+
+		Vars: map[string]interface{}{
+			"name":           name,
+			"vpc_cidr":       "10.0.0.0/16",
+		},
+	}
+	defer terraform.Destroy(t, terraformOptions)
+	terraform.InitAndApply(t, terraformOptions)
+
+	// Run `terraform output` to get the value of an output variable
+	vpcId := terraform.Output(t, terraformOptions, "vpc_id")
+
+	// Get Subnets for VPC
+	subnets := aws.GetSubnetsForVpc(t, vpcId, "eu-north-1")
+
+	// Makes sure that all the subnets created is associated with the vpc, no more or less should be attached to it.
+	require.Equal(t, 4, len(subnets))
+
+	// Checks that all the subnets are marked as private subnets
+	for subnet := range subnets {
+		assert.False(t, aws.IsPublicSubnet(t, fmt.Sprint(subnet), "eu-north-1"))
 	}
 }
 
@@ -199,10 +219,10 @@ func TestNwkPublicSubnet(t *testing.T) {
 		TerraformDir: testFolder,
 
 		Vars: map[string]interface{}{
-			"name": name,
-			"vpc_cidr": "10.0.0.0/25",
+			"name":           name,
+			"vpc_cidr":       "10.0.0.0/25",
 			"subnets_byname": []string{"test-service-publicsubnet-one", "test-service-publicsubnet-two"},
-			"public_subnet": "test-service-publicsubnet-one",
+			"public_subnet":  "test-service-publicsubnet-one",
 		},
 	}
 
@@ -220,6 +240,5 @@ func TestNwkPublicSubnet(t *testing.T) {
 	require.Equal(t, 2, len(subnets))
 
 	// Check that bastion subnet is a public subnet
-	assert.True(t, aws.IsPublicSubnet(t, fmt.Sprint(publicSubnet), awsRegion))
-
+	assert.True(t, aws.IsPublicSubnet(t, publicSubnet, awsRegion))
 }
