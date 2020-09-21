@@ -5,4 +5,3 @@ variable "subnets_byname" {
 }
 variable "bastion_subnets" {}
 variable "operating_system" {}
-variable "key_pair_name" {}
