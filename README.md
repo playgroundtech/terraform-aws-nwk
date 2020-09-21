@@ -1,3 +1,7 @@
+![terratest](https://github.com/playgroundcloud/terraform-aws-nwk/workflows/terratest/badge.svg)
+![terraform fmt](https://github.com/playgroundcloud/terraform-aws-nwk/workflows/terraform-fmt/badge.svg)
+![terraform validate](https://github.com/playgroundcloud/terraform-aws-nwk/workflows/terraform-validate/badge.svg)
+
 # Terraform AWS Network
 This module delivers the standard VPC for a solution environment.
 
