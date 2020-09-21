@@ -126,10 +126,12 @@ func TestNwkBastion(t *testing.T)  {
 	defer terraform.Destroy(t, terraformOptions)
 	terraform.InitAndApply(t, terraformOptions)
 
+	/*
 	// Create goroutine for checking that it's possible to ssh to the machine in the bastion_subnet
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go testSSHAgentToPublicHost(t, terraformOptions, keyPair, &wg)
+	*/
 
 	/*
 
@@ -149,7 +151,7 @@ func TestNwkBastion(t *testing.T)  {
 	*/
 
 	// Make sure that all goroutines has closed before ending the test.
-	wg.Wait()
+	// wg.Wait()
 }
 
 func TestNwkNoStdsg(t *testing.T) {
