@@ -99,7 +99,7 @@ func TestNwkBastion(t *testing.T)  {
 
 	// Create ssh key-pair
 	uniqueID := random.UniqueId()
-	keyPairName := fmt.Sprintf("terratest-ssh-example-%s", uniqueID)
+	keyPairName := fmt.Sprintf("terratest-ssh-%s", uniqueID)
 	keyPair := aws.CreateAndImportEC2KeyPair(t, "eu-north-1", keyPairName)
 	defer aws.DeleteEC2KeyPair(t, keyPair)
 
