@@ -101,9 +101,6 @@ The diagram below tries to illustrate how additional subnetbits results in more 
 
 ![image](./picture/subnetsizes.PNG)
   
-<<<<<<< HEAD
-
-=======
 ### Outputs
 `vpc`  
 
