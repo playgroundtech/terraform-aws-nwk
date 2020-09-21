@@ -3,19 +3,19 @@ provider "aws" {
 }
 
 module "nwk" {
-  source = "../../"
-  name  = var.name
-  vpc_cidr = var.vpc_cidr
-  subnets_byname = var.subnets_byname
-  bastion_subnets = [var.bastion_subnets]
+  source           = "../../"
+  name             = var.name
+  vpc_cidr         = var.vpc_cidr
+  subnets_byname   = var.subnets_byname
+  bastion_subnets  = [var.bastion_subnets]
   operating_system = var.operating_system
 }
 
 resource "aws_instance" "test" {
-  ami = "ami-0e769fbef3dc1c3b8"
-  instance_type = "t3.micro"
-  key_name = var.key_pair_name
-  subnet_id = module.nwk.subnets[var.bastion_subnets].id
+  ami                    = "ami-0e769fbef3dc1c3b8"
+  instance_type          = "t3.micro"
+  key_name               = var.key_pair_name
+  subnet_id              = module.nwk.subnets[var.bastion_subnets].id
   vpc_security_group_ids = [module.nwk.security_groups[var.bastion_subnets].id]
 }
 

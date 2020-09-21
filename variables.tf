@@ -6,14 +6,14 @@ variable "name" {
 
 # VPC Variables
 variable "vpc_cidr" {
-  type = string
+  type        = string
   description = "The CIDR block for the VPC."
 }
 
 variable "instance_tenancy" {
-  type = string
+  type        = string
   description = "A tenancy option for instances launched into the VPC."
-  default = "default"
+  default     = "default"
 }
 
 variable "vpc_tags" {
@@ -37,39 +37,39 @@ variable "subnets_byname" {
 }
 
 variable "subnets_bybits" {
-  type = list(object({name=string,bits=number,net=number}))
+  type    = list(object({ name = string, bits = number, net = number }))
   default = []
 }
 
 variable "subnets_bycidr" {
-  type = list(object({name=string,cidr=string}))
+  type    = list(object({ name = string, cidr = string }))
   default = []
 }
 
 variable "subnets_without_stdsg" {
-  type = list(string)
+  type    = list(string)
   default = []
 }
 
 variable "public_subnets" {
   default = []
-  type = list(string)
+  type    = list(string)
 }
 
 variable "bastion_subnets" {
   default = []
-  type = list(string)
+  type    = list(string)
 }
 
 variable "bastion_cidr_blocks" {
   default = ["0.0.0.0/0"]
-  type = list(string)
+  type    = list(string)
 }
 
 variable "operating_system" {
   description = "The Operating Systems that the machines within the subnets will run on. Opens traffic for SSH or RDP communication within the VPC."
-  type = string
-  default = ""
+  type        = string
+  default     = ""
 }
 
 variable "aws_security_group_tags" {
