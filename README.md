@@ -1,4 +1,5 @@
 # Terraform AWS Network
+This module delivers the standard VPC for a solution environment.
 
 ## Provisional Instructions
 ```hcl
@@ -100,4 +101,12 @@ The diagram below tries to illustrate how additional subnetbits results in more 
 
 ![image](./picture/subnetsizes.PNG)
   
+<<<<<<< HEAD
 
+=======
+### Outputs
+`vpc`  
+
+`subnets`  
+  
+`security_groups`     
