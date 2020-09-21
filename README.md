@@ -39,23 +39,23 @@ One of `subnets_byname`, `subnets_bybits` or `subnets_bycidr` must be used:
 * `subnets_bybits` | (Required/Optional) - List(object({name=string,bits=number,net=number}))   
 *Default: []*  
 
-* `subnets_bycidr` | (Required/Optional) - List(object({name=string,cidr=string}))   
+* `subnets_bycidr` | (Required/Optional) - List(object({name=string,cidr=string}))     
 *Default: []*  
 
 * `subnets_without_stdsg` | (Optional) - List(string)  
-If you want to specify any subnets that won't generate a standard security group.
+If you want to specify any subnets that won't generate a standard security group.  
 *Default: []*  
 
 * `public_subnets` | (Optional) - List(string)  
-The names of which subnets you want to set as public subnets.
+The names of which subnets you want to set as public subnets.  
 *Default: []*  
 
 * `bastion_subnets` | (Optional) - List(string)  
-The name of the subnet which you want to host your bastion host within.
+The name of the subnet which you want to host your bastion host within.  
 *Default: []*  
 
 * `bastion_cidr_blocks` | (Optional) - List(string)  
-The cidr that you want to be able to access the bastion host from. `0.0.0.0/0` is not recommended.  
+The cidr that you want to be able to access the bastion host from. `0.0.0.0/0` is not recommended.    
 *Default: ["0.0.0.0/0"]*  
 
 * `operating_system` | (Optional) - String  
@@ -64,10 +64,10 @@ The Operating Systems that the machines within the subnets will run on. Opens tr
 
 * `aws_security_group_tags` | (Optional) - Map(string)  
 Additional tags for subnets standard security groups.  
-*Default: {}*  
+*Default: {}*    
 
 **Internet Gateway**    
-* `internet_gateway_tags` | (Optional) - Map(string)
+* `internet_gateway_tags` | (Optional) - Map(string)  
 Additional tags for the Internet Gateway.  
 *Default: {}*  
 
