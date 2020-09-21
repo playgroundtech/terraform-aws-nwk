@@ -4,7 +4,7 @@ This module delivers the standard VPC for a solution environment.
 ## Provisional Instructions
 ```hcl
 module "nwk" {
-  source            = ""
+  source            = "git@github.com:playgroundcloud/terraform-aws-nwk.git?ref=vX.Y.Z"
   name              = "test"
   vpc_cidr          = "10.0.0.0/16"
   subnets_byname    = ["test", "test1", "test2"]
@@ -28,7 +28,7 @@ Additional tags for the VPC
 *Default: {}*  
 
 **Subnet Variables**  
-You can read up on different subnet sizing under [Additional Notes](###Additional-Notes)    
+You can read up on different subnet sizing under [Additional Notes](#additional-notes)    
 * `subnet_bits` | (Optional) - Number  
 *Default: -1*  
 
