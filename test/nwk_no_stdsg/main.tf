@@ -9,3 +9,7 @@ module "nwk" {
   subnets_byname        = var.subnets_byname
   subnets_without_stdsg = var.subnets_without_stdsg
 }
+
+output "vpc_id" {
+  value = module.nwk.vpc.id
+}

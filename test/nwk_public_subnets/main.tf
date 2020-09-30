@@ -10,3 +10,11 @@ module "nwk" {
   public_subnets   = [var.public_subnet]
   operating_system = "windows"
 }
+
+output "vpc_id" {
+  value = module.nwk.vpc.id
+}
+
+output "public_subnet" {
+  value = module.nwk.subnets[var.public_subnet].id
+}
