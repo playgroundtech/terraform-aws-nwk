@@ -25,7 +25,7 @@ variable "vpc_tags" {
 # Subnet Variables
 variable "availability_zone" {
   description = "The AZ for the subnet"
-  type = list(string)
+  type        = list(string)
 }
 
 variable "subnet_bits" {
@@ -34,32 +34,32 @@ variable "subnet_bits" {
 
 variable "subnets_byname" {
   description = "The name of the subnets you want to create. Each name will create a new subnet. The subnets will be divided into 8 equally-sized if `subnet_bits` isn't changed"
-  type    = list(string)
-  default = []
+  type        = list(string)
+  default     = []
 }
 
 variable "subnets_bybits" {
   description = "List of object to create your subnet. This will create subnet based on bits and net set by the user."
-  type    = list(object({ name = string, bits = number, net = number }))
-  default = []
+  type        = list(object({ name = string, bits = number, net = number }))
+  default     = []
 }
 
 variable "subnets_bycidr" {
   description = "List of object to create your subnet. This will create subnets based cidr set by the user."
-  type    = list(object({ name = string, cidr = string }))
-  default = []
+  type        = list(object({ name = string, cidr = string }))
+  default     = []
 }
 
 variable "public_subnets" {
   description = "The names of which subnets you want to set as public subnets."
-  default = []
-  type    = list(string)
+  default     = []
+  type        = list(string)
 }
 
 variable "bastion_subnets" {
   description = "The name of the subnet which you want to host your bastion host within."
-  default = []
-  type    = list(string)
+  default     = []
+  type        = list(string)
 }
 
 # Internet Gateway

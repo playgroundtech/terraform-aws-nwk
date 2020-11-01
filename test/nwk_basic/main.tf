@@ -3,10 +3,10 @@ provider "aws" {
 }
 
 module "nwk" {
-  source         = "../../"
-  name           = var.name
-  vpc_cidr       = var.vpc_cidr
-  subnets_byname = var.subnets_byname
+  source            = "../../"
+  name              = var.name
+  vpc_cidr          = var.vpc_cidr
+  subnets_byname    = var.subnets_byname
   availability_zone = ["eu-north-1a"]
 }
 

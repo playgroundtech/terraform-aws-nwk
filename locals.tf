@@ -5,7 +5,7 @@ locals {
     { for subnet in var.subnets_bybits : subnet.name => { cidr = cidrsubnet(var.vpc_cidr, subnet.bits, subnet.net), az = element(var.availability_zone, index(var.subnets_bybits, subnet)) } },
     { for subnet in var.subnets_bycidr : subnet.name => { cidr = subnet.cidr, az = element(var.availability_zone, index(var.subnets_bycidr, subnet)) } },
   ))
-  public_subnets        = { for net in keys(local.subnetmap) : net => net if contains(var.public_subnets, net) == true }
-  bastion_subnets       = { for net in keys(local.subnetmap) : net => net if contains(var.bastion_subnets, net) == true }
-  non_public_subnets    = { for net in keys(local.subnetmap) : net => net if contains(var.public_subnets, net) != true }
+  public_subnets     = { for net in keys(local.subnetmap) : net => net if contains(var.public_subnets, net) == true }
+  bastion_subnets    = { for net in keys(local.subnetmap) : net => net if contains(var.bastion_subnets, net) == true }
+  non_public_subnets = { for net in keys(local.subnetmap) : net => net if contains(var.public_subnets, net) != true }
 }

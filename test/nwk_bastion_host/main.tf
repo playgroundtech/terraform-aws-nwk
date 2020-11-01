@@ -3,11 +3,11 @@ provider "aws" {
 }
 
 module "nwk" {
-  source           = "../../"
-  name             = var.name
-  vpc_cidr         = var.vpc_cidr
-  subnets_byname   = var.subnets_byname
-  bastion_subnets  = [var.bastion_subnets]
+  source            = "../../"
+  name              = var.name
+  vpc_cidr          = var.vpc_cidr
+  subnets_byname    = var.subnets_byname
+  bastion_subnets   = [var.bastion_subnets]
   availability_zone = ["eu-north-1a"]
 }
 
@@ -19,18 +19,18 @@ resource "aws_instance" "test" {
   vpc_security_group_ids = [aws_security_group.sg.id]
 }
 resource "aws_security_group" "sg" {
-  name = "BastionHost"
+  name        = "BastionHost"
   description = "Security Group for allowing ssh to Bastion Host"
-  vpc_id = module.nwk.vpc.id
+  vpc_id      = module.nwk.vpc.id
 }
 
 resource "aws_security_group_rule" "sgr" {
-  from_port = 22
-  protocol = "tcp"
+  from_port         = 22
+  protocol          = "tcp"
   security_group_id = aws_security_group.sg.id
-  to_port = 22
-  type = "ingress"
-  cidr_blocks = ["0.0.0.0/0"]
+  to_port           = 22
+  type              = "ingress"
+  cidr_blocks       = ["0.0.0.0/0"]
 }
 
 output "vpc_id" {
