@@ -51,6 +51,28 @@ module "nwk" {
 }
 ```
 
+#### Subnet By Bits Read More Here: [Additional Notes](#additional-notes)  
+```hcl
+module "nwk" {
+  source            = "git@github.com:playgroundcloud/terraform-aws-nwk.git?ref=vX.Y.Z"
+  name              = "test"
+  vpc_cidr          = "10.0.0.0/16"
+  subnets_bybits    = [{ name = "App", bits = 1, net = 1 }, { name = "Front", bits = 2, net = 1 }, { name = "DB", bits = 3, net = 1 }, { name = "Admin", bits = 3, net = 0 }]
+  availability_zone = ["eu-north-1a", "eu-north-1b", "eu-north-1c"]
+}
+```
+
+#### Subnet By Cidr Read More Here: [Additional Notes](#additional-notes)  
+```hcl
+module "nwk" {
+  source            = "git@github.com:playgroundcloud/terraform-aws-nwk.git?ref=vX.Y.Z"
+  name              = "test"
+  vpc_cidr          = "10.0.0.0/16"
+  subnets_bycidr    = [{ name = "App", cidr = "10.0.0.128/26" }, { name = "Front", cidr = "10.0.0.64/26" }, { name = "DB", cidr = "10.0.0.32/27" }, { name = "Admin", cidr = "10.0.0.0/27" }]
+  availability_zone = ["eu-north-1a", "eu-north-1b", "eu-north-1c"]
+}
+```
+
 ### Variables
 * `name` | (Required) - String  
 Name to be used on all the resources as identifier  
@@ -64,10 +86,10 @@ A tenancy option for instances launched into the VPC.
 Each instance that you launch into a VPC has a tenancy attribute. This attribute has the following values:  
 `default` - Your instance runs on shared hardware.  
 `dedicated` - Your instance runs on single-tenant hardware.  
-`host` - Your instance runs on a Dedicated Host, which is an isolated server with configurations that you can control.  
+`host` - Your instance runs on a Dedicated Host, which is an isolated server with configurations that you can control.    
 After you launch an instance, there are some limitations to changing its tenancy.  
-* You cannot change the tenancy of an instance from `default` to `dedicated` or `host` after you've launched it.  
-* You cannot change the tenancy of an instance from `dedicated` or `host` to `default` after you've launched it.  
+You cannot change the tenancy of an instance from `default` to `dedicated` or `host` after you've launched it.  
+You cannot change the tenancy of an instance from `dedicated` or `host` to `default` after you've launched it.  
 *Default: "default"*  
 
 * `vpc_tags` (Optional) - Map(string)  
@@ -145,4 +167,3 @@ The diagram below tries to illustrate how additional subnet bits results in more
 
 `subnets`  
   
-`security_groups`     
