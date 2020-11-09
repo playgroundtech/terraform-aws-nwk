@@ -6,7 +6,7 @@ resource "aws_subnet" "subnets" {
   availability_zone       = each.value["az"]
   tags = merge(
     {
-      "Name" = format("%s", var.name)
+      "Name" = each.key
     },
     var.vpc_tags
   )
