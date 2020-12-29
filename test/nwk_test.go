@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 )
@@ -18,7 +19,7 @@ import (
 // Therefore there is no t.Parallel() function in this test-suite.
 // Test TestNwkBastion is taking advantage of goroutines to speed up testing.
 
-func testSSHAgentToPublicHost(t *testing.T, terraformOptions *terraform.Options, keyPair *aws.Ec2Keypair) {
+func testSSHAgentToPublicHost(t *testing.T, terraformOptions *terraform.Options, keyPair *aws.Ec2Keypair, wg *sync.WaitGroup) {
 	// Run `terraform output` to get the value of an output variable
 	publicInstanceIP := terraform.Output(t, terraformOptions, "public_instance_ip")
 
@@ -56,6 +57,8 @@ func testSSHAgentToPublicHost(t *testing.T, terraformOptions *terraform.Options,
 
 		return "", nil
 	})
+
+	wg.Done()
 }
 
 func TestNwkBasic(t *testing.T) {
@@ -75,11 +78,11 @@ func TestNwkBasic(t *testing.T) {
 	terraform.InitAndApply(t, terraformOptions)
 
 	// Run `terraform output` to get the value of an output variable
-	vpcId := terraform.Output(t, terraformOptions, "vpc_id")
-
+	vpcId := terraform.Output(t, terraformOptions, "vpc")
+	fmt.Println(vpcId)
 	// Get Subnets for VPC
 	subnets := aws.GetSubnetsForVpc(t, vpcId, "eu-north-1")
-
+	fmt.Println(subnets)
 	// Makes sure that all the subnets created is associated with the vpc, no more or less should be attached to it.
 	require.Equal(t, 3, len(subnets))
 
@@ -121,10 +124,14 @@ func TestNwkBastion(t *testing.T) {
 	defer terraform.Destroy(t, terraformOptions)
 	terraform.InitAndApply(t, terraformOptions)
 
-	testSSHAgentToPublicHost(t, terraformOptions, keyPair)
+	// Create goroutine for checking that it's possible to ssh to the machine in the bastion_subnet
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go testSSHAgentToPublicHost(t, terraformOptions, keyPair, &wg)
 
 	// Run `terraform output` to get the value of an output variable
-	vpcId := terraform.Output(t, terraformOptions, "vpc_id")
+	vpcId := terraform.Output(t, terraformOptions, "vpc")
+
 	bastionSubnet := terraform.Output(t, terraformOptions, "bastion_subnet")
 
 	// Get Subnets for VPC
@@ -135,6 +142,9 @@ func TestNwkBastion(t *testing.T) {
 
 	// Check that bastion subnet is a public subnet
 	assert.True(t, aws.IsPublicSubnet(t, fmt.Sprint(bastionSubnet), awsRegion))
+
+	// Make sure that all goroutines has closed before ending the test.
+	wg.Wait()
 }
 
 func TestNwkByBits(t *testing.T) {
@@ -153,7 +163,7 @@ func TestNwkByBits(t *testing.T) {
 	terraform.InitAndApply(t, terraformOptions)
 
 	// Run `terraform output` to get the value of an output variable
-	vpcId := terraform.Output(t, terraformOptions, "vpc_id")
+	vpcId := terraform.Output(t, terraformOptions, "vpc")
 
 	// Get Subnets for VPC
 	subnets := aws.GetSubnetsForVpc(t, vpcId, "eu-north-1")
@@ -183,7 +193,7 @@ func TestNwkByCidr(t *testing.T) {
 	terraform.InitAndApply(t, terraformOptions)
 
 	// Run `terraform output` to get the value of an output variable
-	vpcId := terraform.Output(t, terraformOptions, "vpc_id")
+	vpcId := terraform.Output(t, terraformOptions, "vpc")
 
 	// Get Subnets for VPC
 	subnets := aws.GetSubnetsForVpc(t, vpcId, "eu-north-1")
@@ -221,7 +231,8 @@ func TestNwkPublicSubnet(t *testing.T) {
 	terraform.InitAndApply(t, terraformOptions)
 
 	// Run `terraform output` to get the value of an output variable
-	vpcId := terraform.Output(t, terraformOptions, "vpc_id")
+	vpcId := terraform.Output(t, terraformOptions, "vpc")
+
 	publicSubnet := terraform.Output(t, terraformOptions, "public_subnet")
 
 	// Get Subnets for VPC

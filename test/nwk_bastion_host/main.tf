@@ -33,7 +33,7 @@ resource "aws_security_group_rule" "sgr" {
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
-output "vpc_id" {
+output "vpc" {
   value = module.nwk.vpc_id
 }
 

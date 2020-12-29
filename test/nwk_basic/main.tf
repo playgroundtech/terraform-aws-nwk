@@ -10,7 +10,7 @@ module "nwk" {
   availability_zone = ["eu-north-1a"]
 }
 
-output "vpc_id" {
+output "vpc" {
   value = module.nwk.vpc_id
 }
 
