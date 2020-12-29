@@ -79,10 +79,10 @@ func TestNwkBasic(t *testing.T) {
 
 	// Run `terraform output` to get the value of an output variable
 	vpcId := terraform.Output(t, terraformOptions, "vpc_id")
-	fmt.Println(vpcId)
+
 	// Get Subnets for VPC
 	subnets := aws.GetSubnetsForVpc(t, vpcId, "eu-north-1")
-	fmt.Println(subnets)
+	
 	// Makes sure that all the subnets created is associated with the vpc, no more or less should be attached to it.
 	require.Equal(t, 3, len(subnets))
 
