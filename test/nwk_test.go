@@ -78,7 +78,7 @@ func TestNwkBasic(t *testing.T) {
 	terraform.InitAndApply(t, terraformOptions)
 
 	// Run `terraform output` to get the value of an output variable
-	vpcId := terraform.Output(t, terraformOptions, "vpc")
+	vpcId := terraform.Output(t, terraformOptions, "vpc_id")
 	fmt.Println(vpcId)
 	// Get Subnets for VPC
 	subnets := aws.GetSubnetsForVpc(t, vpcId, "eu-north-1")
@@ -130,7 +130,7 @@ func TestNwkBastion(t *testing.T) {
 	go testSSHAgentToPublicHost(t, terraformOptions, keyPair, &wg)
 
 	// Run `terraform output` to get the value of an output variable
-	vpcId := terraform.Output(t, terraformOptions, "vpc")
+	vpcId := terraform.Output(t, terraformOptions, "vpc_id")
 
 	bastionSubnet := terraform.Output(t, terraformOptions, "bastion_subnet")
 
@@ -163,7 +163,7 @@ func TestNwkByBits(t *testing.T) {
 	terraform.InitAndApply(t, terraformOptions)
 
 	// Run `terraform output` to get the value of an output variable
-	vpcId := terraform.Output(t, terraformOptions, "vpc")
+	vpcId := terraform.Output(t, terraformOptions, "vpc_id")
 
 	// Get Subnets for VPC
 	subnets := aws.GetSubnetsForVpc(t, vpcId, "eu-north-1")
@@ -193,7 +193,7 @@ func TestNwkByCidr(t *testing.T) {
 	terraform.InitAndApply(t, terraformOptions)
 
 	// Run `terraform output` to get the value of an output variable
-	vpcId := terraform.Output(t, terraformOptions, "vpc")
+	vpcId := terraform.Output(t, terraformOptions, "vpc_id")
 
 	// Get Subnets for VPC
 	subnets := aws.GetSubnetsForVpc(t, vpcId, "eu-north-1")
@@ -231,7 +231,7 @@ func TestNwkPublicSubnet(t *testing.T) {
 	terraform.InitAndApply(t, terraformOptions)
 
 	// Run `terraform output` to get the value of an output variable
-	vpcId := terraform.Output(t, terraformOptions, "vpc")
+	vpcId := terraform.Output(t, terraformOptions, "vpc_id")
 
 	publicSubnet := terraform.Output(t, terraformOptions, "public_subnet")
 
