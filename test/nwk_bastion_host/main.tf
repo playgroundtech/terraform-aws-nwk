@@ -34,7 +34,7 @@ resource "aws_security_group_rule" "sgr" {
 }
 
 output "vpc_id" {
-  value = module.nwk.vpc.id
+  value = module.nwk.vpc_id
 }
 
 output "public_instance_ip" {

@@ -11,7 +11,7 @@ module "nwk" {
 }
 
 output "vpc_id" {
-  value = module.nwk.vpc.id
+  value = module.nwk.vpc_id
 }
 
 output "subnet_ids" {

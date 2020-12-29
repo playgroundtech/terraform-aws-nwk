@@ -10,7 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"strings"
-	"sync"
 	"testing"
 	"time"
 )
@@ -19,7 +18,7 @@ import (
 // Therefore there is no t.Parallel() function in this test-suite.
 // Test TestNwkBastion is taking advantage of goroutines to speed up testing.
 
-func testSSHAgentToPublicHost(t *testing.T, terraformOptions *terraform.Options, keyPair *aws.Ec2Keypair, wg *sync.WaitGroup) {
+func testSSHAgentToPublicHost(t *testing.T, terraformOptions *terraform.Options, keyPair *aws.Ec2Keypair) {
 	// Run `terraform output` to get the value of an output variable
 	publicInstanceIP := terraform.Output(t, terraformOptions, "public_instance_ip")
 
@@ -57,8 +56,6 @@ func testSSHAgentToPublicHost(t *testing.T, terraformOptions *terraform.Options,
 
 		return "", nil
 	})
-
-	wg.Done()
 }
 
 func TestNwkBasic(t *testing.T) {
@@ -124,10 +121,7 @@ func TestNwkBastion(t *testing.T) {
 	defer terraform.Destroy(t, terraformOptions)
 	terraform.InitAndApply(t, terraformOptions)
 
-	// Create goroutine for checking that it's possible to ssh to the machine in the bastion_subnet
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go testSSHAgentToPublicHost(t, terraformOptions, keyPair, &wg)
+	testSSHAgentToPublicHost(t, terraformOptions, keyPair)
 
 	// Run `terraform output` to get the value of an output variable
 	vpcId := terraform.Output(t, terraformOptions, "vpc_id")
@@ -141,9 +135,6 @@ func TestNwkBastion(t *testing.T) {
 
 	// Check that bastion subnet is a public subnet
 	assert.True(t, aws.IsPublicSubnet(t, fmt.Sprint(bastionSubnet), awsRegion))
-
-	// Make sure that all goroutines has closed before ending the test.
-	wg.Wait()
 }
 
 func TestNwkByBits(t *testing.T) {
