@@ -24,13 +24,13 @@ variable "vpc_tags" {
 
 variable "enable_dns_support" {
   description = "A boolean flag to enable/disable DNS support in the VPC."
-  type = bool
-  default = true
+  type        = bool
+  default     = true
 }
 variable "enable_dns_hostnames" {
   description = "A boolean flag to enable/disable DNS hostnames in the VPC."
-  type = bool
-  default = true
+  type        = bool
+  default     = true
 }
 
 # Subnet Variables
@@ -76,8 +76,8 @@ variable "bastion_subnets" {
 # Internet Gateway
 variable "internet_gateway" {
   description = "Force creation of Internet Gateway. Only needed when no public or bastion subnets are deployed"
-  type = bool
-  default = false
+  type        = bool
+  default     = false
 }
 
 variable "internet_gateway_tags" {
