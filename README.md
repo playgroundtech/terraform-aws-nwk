@@ -96,6 +96,14 @@ You cannot change the tenancy of an instance from `dedicated` or `host` to `defa
 Additional tags for the VPC  
 *Default: {}*  
 
+* `enable_dns_support` (Optional) - Bool  
+A boolean flag to enable/disable DNS support in the VPC.    
+*Default: true*  
+
+* `enable_dns_hostnames` (Optional) - Bool  
+A boolean flag to enable/disable DNS hostnames in the VPC.    
+*Default: true*  
+
 **Subnet Variables**  
 You can read up on different subnet sizing under [Additional Notes](#additional-notes)      
 * `availability_zone` | (Required) - List(string)  
@@ -165,5 +173,8 @@ The diagram below tries to illustrate how additional subnet bits results in more
 ### Outputs
 `vpc`  
 
+`vpc_id`  
+
 `subnets`  
-  
+
+`subnet_ids`
