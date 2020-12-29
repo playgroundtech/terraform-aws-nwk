@@ -1,6 +1,6 @@
 # Add internetgateway and routing on local.public_subnets
 resource "aws_internet_gateway" "igw" {
-  count  = local.public_subnets != {} || local.bastion_subnets != {} ? 1 : 0
+  count  = local.public_subnets != {} || local.bastion_subnets != {} || var.internet_gateway == true ? 1 : 0
   vpc_id = aws_vpc.main.id
   tags = merge(
     {
