@@ -2,6 +2,11 @@ package test
 
 import (
 	"fmt"
+	"strings"
+	"sync"
+	"testing"
+	"time"
+
 	"github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/retry"
@@ -9,10 +14,6 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"strings"
-	"sync"
-	"testing"
-	"time"
 )
 
 // NO tests in this testsuite can be runned in Parallel due to number of VPC constraints.
@@ -82,7 +83,7 @@ func TestNwkBasic(t *testing.T) {
 
 	// Get Subnets for VPC
 	subnets := aws.GetSubnetsForVpc(t, vpcId, "eu-north-1")
-	
+
 	// Makes sure that all the subnets created is associated with the vpc, no more or less should be attached to it.
 	require.Equal(t, 3, len(subnets))
 
@@ -113,11 +114,11 @@ func TestNwkBastion(t *testing.T) {
 		TerraformDir: testFolder,
 
 		Vars: map[string]interface{}{
-			"name":             name,
-			"vpc_cidr":         "10.0.0.0/16",
-			"subnets_byname":   []string{"test-bastion-nwk-one", "test-bastion-nwk-two", "test-basic-bastion-three", "test-basic-bastion-four", "test-basic-bastion-five"},
-			"bastion_subnets":  "test-bastion-nwk-one",
-			"key_pair_name":    keyPairName,
+			"name":            name,
+			"vpc_cidr":        "10.0.0.0/16",
+			"subnets_byname":  []string{"test-bastion-nwk-one", "test-bastion-nwk-two", "test-basic-bastion-three", "test-basic-bastion-four", "test-basic-bastion-five"},
+			"bastion_subnets": "test-bastion-nwk-one",
+			"key_pair_name":   keyPairName,
 		},
 	}
 
@@ -155,8 +156,8 @@ func TestNwkByBits(t *testing.T) {
 		TerraformDir: "../test/nwk_bybits",
 
 		Vars: map[string]interface{}{
-			"name":           name,
-			"vpc_cidr":       "10.0.0.0/16",
+			"name":     name,
+			"vpc_cidr": "10.0.0.0/16",
 		},
 	}
 	defer terraform.Destroy(t, terraformOptions)
@@ -185,8 +186,8 @@ func TestNwkByCidr(t *testing.T) {
 		TerraformDir: "../test/nwk_bycidr",
 
 		Vars: map[string]interface{}{
-			"name":           name,
-			"vpc_cidr":       "10.0.0.0/16",
+			"name":     name,
+			"vpc_cidr": "10.0.0.0/16",
 		},
 	}
 	defer terraform.Destroy(t, terraformOptions)
