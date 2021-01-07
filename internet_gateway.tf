@@ -13,16 +13,20 @@ resource "aws_internet_gateway" "igw" {
 resource "aws_route_table" "igw" {
   count  = local.public_subnets != {} || local.bastion_subnets != {} ? 1 : 0
   vpc_id = aws_vpc.main.id
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.igw[0].id
-  }
+
   tags = merge(
     {
       "Name" = format("%s", var.name)
     },
     var.route_table_public_tags
   )
+}
+
+resource "aws_route" "igw" {
+  count                  = local.public_subnets != {} || local.bastion_subnets != {} ? 1 : 0
+  route_table_id         = aws_route_table.igw[0].id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.igw[0].id
 }
 
 resource "aws_route_table_association" "igw" {
