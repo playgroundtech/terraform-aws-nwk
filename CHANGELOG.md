@@ -1,0 +1,7 @@
+# v1.0.0
+FEATURES
+* Release of v1.0.0
+
+ENHANCEMENTS
+
+BUG FIXES

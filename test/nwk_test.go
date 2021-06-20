@@ -1,9 +1,14 @@
+// Use test-structure to skip certain steps
+// SKIP_destroy=true go test -v -timeout 90m -run TestNameOfYourTest
+// NO tests in this testsuite can be runned in Parallel due to number of VPC constraints.
+// Therefore there is no t.Parallel() function in this test-suite.
+
 package test
 
 import (
 	"fmt"
+	test_structure "github.com/gruntwork-io/terratest/modules/test-structure"
 	"strings"
-	"sync"
 	"testing"
 	"time"
 
@@ -16,11 +21,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// NO tests in this testsuite can be runned in Parallel due to number of VPC constraints.
-// Therefore there is no t.Parallel() function in this test-suite.
-// Test TestNwkBastion is taking advantage of goroutines to speed up testing.
-
-func testSSHAgentToPublicHost(t *testing.T, terraformOptions *terraform.Options, keyPair *aws.Ec2Keypair, wg *sync.WaitGroup) {
+func testSSHAgentToPublicHost(t *testing.T, terraformOptions *terraform.Options, keyPair *aws.Ec2Keypair) {
 	// Run `terraform output` to get the value of an output variable
 	publicInstanceIP := terraform.Output(t, terraformOptions, "public_instance_ip")
 
@@ -58,190 +59,265 @@ func testSSHAgentToPublicHost(t *testing.T, terraformOptions *terraform.Options,
 
 		return "", nil
 	})
-
-	wg.Done()
 }
 
 func TestNwkBasic(t *testing.T) {
-
+	// Create a random unique ID for the VPC
 	name := random.UniqueId()
+	workingDir := "../test/nwk_basic"
 
-	terraformOptions := &terraform.Options{
-		TerraformDir: "../test/nwk_basic",
+	defer test_structure.RunTestStage(t, "destroy", func() {
+		terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
+		terraform.Destroy(t, terraformOptions)
+		// clean up saved options
+		test_structure.CleanupTestDataFolder(t, workingDir)
+	})
 
-		Vars: map[string]interface{}{
-			"name":           name,
-			"vpc_cidr":       "10.0.0.0/16",
-			"subnets_byname": []string{"test-basic-nwk-one", "test-basic-nwk-two", "test-basic-nwk-three"},
-		},
-	}
-	defer terraform.Destroy(t, terraformOptions)
-	terraform.InitAndApply(t, terraformOptions)
+	test_structure.RunTestStage(t, "init", func() {
+		terraformOptions := &terraform.Options{
+			TerraformDir: workingDir,
 
-	// Run `terraform output` to get the value of an output variable
-	vpcId := terraform.Output(t, terraformOptions, "vpc_id")
+			Vars: map[string]interface{}{
+				"name":           name,
+				"vpc_cidr":       "10.0.0.0/16",
+				"subnets_byname": []string{"test-basic-nwk-one", "test-basic-nwk-two", "test-basic-nwk-three"},
+			},
+		}
+		test_structure.SaveTerraformOptions(t, workingDir, terraformOptions)
+		terraform.InitAndApply(t, terraformOptions)
+	})
 
-	// Get Subnets for VPC
-	subnets := aws.GetSubnetsForVpc(t, vpcId, "eu-north-1")
+	test_structure.RunTestStage(t, "tests", func() {
+		terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
+		// Run `terraform output` to get the value of an output variable
+		vpcId := terraform.Output(t, terraformOptions, "vpc_id")
 
-	// Makes sure that all the subnets created is associated with the vpc, no more or less should be attached to it.
-	require.Equal(t, 3, len(subnets))
+		// Get Subnets for VPC
+		subnets := aws.GetSubnetsForVpc(t, vpcId, "eu-north-1")
 
-	// Checks that all the subnets are marked as private subnets
-	for subnet := range subnets {
-		assert.False(t, aws.IsPublicSubnet(t, fmt.Sprint(subnet), "eu-north-1"))
-	}
+		// Makes sure that all the subnets created is associated with the vpc, no more or less should be attached to it.
+		require.Equal(t, 3, len(subnets))
+
+		// Checks that all the subnets are marked as private subnets
+		for subnet := range subnets {
+			assert.False(t, aws.IsPublicSubnet(t, fmt.Sprint(subnet), "eu-north-1"))
+		}
+		terraform.ApplyAndIdempotent(t, terraformOptions)
+	})
 }
 
 func TestNwkBastion(t *testing.T) {
-
-	testFolder := "../test/nwk_bastion_host"
-
 	// Create ssh key-pair
 	uniqueID := random.UniqueId()
 	keyPairName := fmt.Sprintf("terratest-ssh-example-%s", uniqueID)
 	keyPair := aws.CreateAndImportEC2KeyPair(t, "eu-north-1", keyPairName)
 	defer aws.DeleteEC2KeyPair(t, keyPair)
-
 	// Create a random unique ID for the VPC
 	name := random.UniqueId()
-
 	// AWS Region
 	awsRegion := "eu-north-1"
+	workingDir := "../test/nwk_bastion_host"
 
-	// Options that should be added to
-	terraformOptions := &terraform.Options{
-		TerraformDir: testFolder,
+	defer test_structure.RunTestStage(t, "destroy", func() {
+		terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
+		terraform.Destroy(t, terraformOptions)
+		// clean up saved options
+		test_structure.CleanupTestDataFolder(t, workingDir)
+	})
 
-		Vars: map[string]interface{}{
-			"name":            name,
-			"vpc_cidr":        "10.0.0.0/16",
-			"subnets_byname":  []string{"test-bastion-nwk-one", "test-bastion-nwk-two", "test-basic-bastion-three", "test-basic-bastion-four", "test-basic-bastion-five"},
-			"bastion_subnets": "test-bastion-nwk-one",
-			"key_pair_name":   keyPairName,
-		},
-	}
+	test_structure.RunTestStage(t, "init", func() {
+		terraformOptions := &terraform.Options{
+			TerraformDir: workingDir,
 
-	defer terraform.Destroy(t, terraformOptions)
-	terraform.InitAndApply(t, terraformOptions)
+			Vars: map[string]interface{}{
+				"name":            name,
+				"vpc_cidr":        "10.0.0.0/16",
+				"subnets_byname":  []string{"test-bastion-nwk-one", "test-bastion-nwk-two", "test-basic-bastion-three", "test-basic-bastion-four", "test-basic-bastion-five"},
+				"public_subnets": "test-bastion-nwk-one",
+				"key_pair_name":   keyPairName,
+			},
+		}
+		test_structure.SaveTerraformOptions(t, workingDir, terraformOptions)
+		terraform.InitAndApply(t, terraformOptions)
+	})
 
-	// Create goroutine for checking that it's possible to ssh to the machine in the bastion_subnet
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go testSSHAgentToPublicHost(t, terraformOptions, keyPair, &wg)
-
-	// Run `terraform output` to get the value of an output variable
-	vpcId := terraform.Output(t, terraformOptions, "vpc_id")
-
-	bastionSubnet := terraform.Output(t, terraformOptions, "bastion_subnet")
-
-	// Get Subnets for VPC
-	subnets := aws.GetSubnetsForVpc(t, vpcId, awsRegion)
-
-	// Makes sure that all the subnets created is associated with the vpc, no more or less should be attached to it.
-	require.Equal(t, 5, len(subnets))
-
-	// Check that bastion subnet is a public subnet
-	assert.True(t, aws.IsPublicSubnet(t, fmt.Sprint(bastionSubnet), awsRegion))
-
-	// Make sure that all goroutines has closed before ending the test.
-	wg.Wait()
+	test_structure.RunTestStage(t, "tests", func() {
+		terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
+		testSSHAgentToPublicHost(t, terraformOptions, keyPair)
+		// Run `terraform output` to get the value of an output variable
+		vpcId := terraform.Output(t, terraformOptions, "vpc_id")
+		bastionSubnet := terraform.Output(t, terraformOptions, "bastion_subnet")
+		// Get Subnets for VPC
+		subnets := aws.GetSubnetsForVpc(t, vpcId, awsRegion)
+		// Makes sure that all the subnets created is associated with the vpc, no more or less should be attached to it.
+		require.Equal(t, 5, len(subnets))
+		// Check that bastion subnet is a public subnet
+		assert.True(t, aws.IsPublicSubnet(t, fmt.Sprint(bastionSubnet), awsRegion))
+		terraform.ApplyAndIdempotent(t, terraformOptions)
+	})
 }
 
 func TestNwkByBits(t *testing.T) {
-
+	// Create a random unique ID for the VPC
 	name := random.UniqueId()
+	workingDir := "../test/nwk_bybits"
 
-	terraformOptions := &terraform.Options{
-		TerraformDir: "../test/nwk_bybits",
+	defer test_structure.RunTestStage(t, "destroy", func() {
+		terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
+		terraform.Destroy(t, terraformOptions)
+		// clean up saved options
+		test_structure.CleanupTestDataFolder(t, workingDir)
+	})
 
-		Vars: map[string]interface{}{
-			"name":     name,
-			"vpc_cidr": "10.0.0.0/16",
-		},
-	}
-	defer terraform.Destroy(t, terraformOptions)
-	terraform.InitAndApply(t, terraformOptions)
+	test_structure.RunTestStage(t, "init", func() {
+		terraformOptions := &terraform.Options{
+			TerraformDir: workingDir,
 
-	// Run `terraform output` to get the value of an output variable
-	vpcId := terraform.Output(t, terraformOptions, "vpc_id")
+			Vars: map[string]interface{}{
+				"name":     name,
+				"vpc_cidr": "10.0.0.0/16",
+			},
+		}
+		test_structure.SaveTerraformOptions(t, workingDir, terraformOptions)
+		terraform.InitAndApply(t, terraformOptions)
+	})
 
-	// Get Subnets for VPC
-	subnets := aws.GetSubnetsForVpc(t, vpcId, "eu-north-1")
+	test_structure.RunTestStage(t, "tests", func() {
+		terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
+		vpcId := terraform.Output(t, terraformOptions, "vpc_id")
+		subnets := aws.GetSubnetsForVpc(t, vpcId, "eu-north-1")
 
-	// Makes sure that all the subnets created is associated with the vpc, no more or less should be attached to it.
-	require.Equal(t, 4, len(subnets))
-
-	// Checks that all the subnets are marked as private subnets
-	for subnet := range subnets {
-		assert.False(t, aws.IsPublicSubnet(t, fmt.Sprint(subnet), "eu-north-1"))
-	}
+		// Makes sure that all the subnets created is associated with the vpc, no more or less should be attached to it.
+		require.Equal(t, 4, len(subnets))
+		// Checks that all the subnets are marked as private subnets
+		for subnet := range subnets {
+			assert.False(t, aws.IsPublicSubnet(t, fmt.Sprint(subnet), "eu-north-1"))
+		}
+		terraform.ApplyAndIdempotent(t, terraformOptions)
+	})
 }
 
 func TestNwkByCidr(t *testing.T) {
-
+	// Create a random unique ID for the VPC
 	name := random.UniqueId()
+	workingDir := "../test/nwk_bycidr"
 
-	terraformOptions := &terraform.Options{
-		TerraformDir: "../test/nwk_bycidr",
+	defer test_structure.RunTestStage(t, "destroy", func() {
+		terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
+		terraform.Destroy(t, terraformOptions)
+		// clean up saved options
+		test_structure.CleanupTestDataFolder(t, workingDir)
+	})
 
-		Vars: map[string]interface{}{
-			"name":     name,
-			"vpc_cidr": "10.0.0.0/16",
-		},
-	}
-	defer terraform.Destroy(t, terraformOptions)
-	terraform.InitAndApply(t, terraformOptions)
+	test_structure.RunTestStage(t, "init", func() {
+		terraformOptions := &terraform.Options{
+			TerraformDir: workingDir,
 
-	// Run `terraform output` to get the value of an output variable
-	vpcId := terraform.Output(t, terraformOptions, "vpc_id")
+			Vars: map[string]interface{}{
+				"name":     name,
+				"vpc_cidr": "10.0.0.0/16",
+			},
+		}
+		test_structure.SaveTerraformOptions(t, workingDir, terraformOptions)
+		terraform.InitAndApply(t, terraformOptions)
+	})
 
-	// Get Subnets for VPC
-	subnets := aws.GetSubnetsForVpc(t, vpcId, "eu-north-1")
+	test_structure.RunTestStage(t, "tests", func() {
+		terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
+		vpcId := terraform.Output(t, terraformOptions, "vpc_id")
+		subnets := aws.GetSubnetsForVpc(t, vpcId, "eu-north-1")
 
-	// Makes sure that all the subnets created is associated with the vpc, no more or less should be attached to it.
-	require.Equal(t, 4, len(subnets))
+		// Makes sure that all the subnets created is associated with the vpc, no more or less should be attached to it.
+		require.Equal(t, 4, len(subnets))
 
-	// Checks that all the subnets are marked as private subnets
-	for subnet := range subnets {
-		assert.False(t, aws.IsPublicSubnet(t, fmt.Sprint(subnet), "eu-north-1"))
-	}
+		// Checks that all the subnets are marked as private subnets
+		for subnet := range subnets {
+			assert.False(t, aws.IsPublicSubnet(t, fmt.Sprint(subnet), "eu-north-1"))
+		}
+		terraform.ApplyAndIdempotent(t, terraformOptions)
+	})
 }
 
 func TestNwkPublicSubnet(t *testing.T) {
-
-	testFolder := "../test/nwk_public_subnets"
 	// Create a random unique ID for the VPC
 	name := random.UniqueId()
-
 	// AWS Region
 	awsRegion := "eu-north-1"
+	workingDir := "../test/nwk_public_subnets"
+	defer test_structure.RunTestStage(t, "destroy", func() {
+		terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
+		terraform.Destroy(t, terraformOptions)
+		// clean up saved options
+		test_structure.CleanupTestDataFolder(t, workingDir)
+	})
+	test_structure.RunTestStage(t, "init", func() {
+		terraformOptions := &terraform.Options{
+			TerraformDir: workingDir,
 
-	terraformOptions := &terraform.Options{
-		TerraformDir: testFolder,
+			Vars: map[string]interface{}{
+				"name":           name,
+				"vpc_cidr":       "10.0.0.0/25",
+				"subnets_byname": []string{"test-service-publicsubnet-one", "test-service-publicsubnet-two"},
+				"public_subnet":  "test-service-publicsubnet-one",
+			},
+		}
+		test_structure.SaveTerraformOptions(t, workingDir, terraformOptions)
+		terraform.InitAndApply(t, terraformOptions)
+	})
 
-		Vars: map[string]interface{}{
-			"name":           name,
-			"vpc_cidr":       "10.0.0.0/25",
-			"subnets_byname": []string{"test-service-publicsubnet-one", "test-service-publicsubnet-two"},
-			"public_subnet":  "test-service-publicsubnet-one",
-		},
-	}
+	test_structure.RunTestStage(t, "tests", func() {
+		terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
+		// Run `terraform output` to get the value of an output variable
+		vpcId := terraform.Output(t, terraformOptions, "vpc_id")
+		publicSubnet := terraform.Output(t, terraformOptions, "public_subnet")
+		// Get Subnets for VPC
+		subnets := aws.GetSubnetsForVpc(t, vpcId, awsRegion)
+		// Makes sure that all the subnets created is associated with the vpc, no more or less should be attached to it.
+		require.Equal(t, 2, len(subnets))
+		// Check that bastion subnet is a public subnet
+		assert.True(t, aws.IsPublicSubnet(t, publicSubnet, awsRegion))
+		terraform.ApplyAndIdempotent(t, terraformOptions)
+	})
+}
 
-	defer terraform.Destroy(t, terraformOptions)
-	terraform.InitAndApply(t, terraformOptions)
+func TestNwkDenyAllACL(t *testing.T) {
+	// Create a random unique ID for the VPC
+	name := random.UniqueId()
+	// AWS Region
+	awsRegion := "eu-north-1"
+	workingDir := "../test/nwk_deny_all_acl"
+	defer test_structure.RunTestStage(t, "destroy", func() {
+		terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
+		terraform.Destroy(t, terraformOptions)
+		// clean up saved options
+		test_structure.CleanupTestDataFolder(t, workingDir)
+	})
+	test_structure.RunTestStage(t, "init", func() {
+		terraformOptions := &terraform.Options{
+			TerraformDir: workingDir,
 
-	// Run `terraform output` to get the value of an output variable
-	vpcId := terraform.Output(t, terraformOptions, "vpc_id")
+			Vars: map[string]interface{}{
+				"name":           name,
+				"vpc_cidr":       "10.0.0.0/25",
+				"subnets_byname": []string{"test-service-deny-all-acl-one", "test-service-deny-all-acl-two"},
+				"public_subnet":  "test-service-deny-all-acl-one",
+			},
+		}
+		test_structure.SaveTerraformOptions(t, workingDir, terraformOptions)
+		terraform.InitAndApply(t, terraformOptions)
+	})
 
-	publicSubnet := terraform.Output(t, terraformOptions, "public_subnet")
-
-	// Get Subnets for VPC
-	subnets := aws.GetSubnetsForVpc(t, vpcId, awsRegion)
-
-	// Makes sure that all the subnets created is associated with the vpc, no more or less should be attached to it.
-	require.Equal(t, 2, len(subnets))
-
-	// Check that bastion subnet is a public subnet
-	assert.True(t, aws.IsPublicSubnet(t, publicSubnet, awsRegion))
+	test_structure.RunTestStage(t, "tests", func() {
+		terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
+		// Run `terraform output` to get the value of an output variable
+		vpcId := terraform.Output(t, terraformOptions, "vpc_id")
+		publicSubnet := terraform.Output(t, terraformOptions, "public_subnet")
+		// Get Subnets for VPC
+		subnets := aws.GetSubnetsForVpc(t, vpcId, awsRegion)
+		// Makes sure that all the subnets created is associated with the vpc, no more or less should be attached to it.
+		require.Equal(t, 2, len(subnets))
+		// Check that bastion subnet is a public subnet
+		assert.True(t, aws.IsPublicSubnet(t, publicSubnet, awsRegion))
+		terraform.ApplyAndIdempotent(t, terraformOptions)
+	})
 }
