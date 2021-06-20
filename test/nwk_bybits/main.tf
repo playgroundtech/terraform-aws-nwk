@@ -13,9 +13,3 @@ module "nwk" {
 output "vpc_id" {
   value = module.nwk.vpc_id
 }
-
-output "subnetmap" {
-  value = module.nwk.subnetmap
-}
-
-

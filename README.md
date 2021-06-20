@@ -3,13 +3,16 @@
 ![terraform validate](https://github.com/playgroundcloud/terraform-aws-nwk/workflows/terraform-validate/badge.svg)
 
 # Terraform AWS Network
-
-This module delivers the standard VPC for a solution environment.
+This module can create the following components for the management of your AWS Network:  
+* `aws_vpc`
+* `aws_subnet`
+* `aws_internet_gateway`
+* `aws_default_network_acl`  
+* `aws_nat_gateway`
+* `aws_eip`
 
 ## Provisional Instructions
-
-#### Minimal
-
+#### Minimal  
 ```hcl
 module "nwk" {
   source            = "git@github.com:playgroundcloud/terraform-aws-nwk.git?ref=vX.Y.Z"
@@ -20,8 +23,7 @@ module "nwk" {
 }
 ```
 
-#### High Availability
-
+#### High Availability  
 ```hcl
 module "nwk" {
   source            = "git@github.com:playgroundcloud/terraform-aws-nwk.git?ref=vX.Y.Z"
@@ -32,8 +34,7 @@ module "nwk" {
 }
 ```
 
-#### 2-tier Public / Private with High Availability
-
+#### 2-tier Public / Private with High Availability  
 ```hcl
 module "nwk" {
   source            = "git@github.com:playgroundcloud/terraform-aws-nwk.git?ref=vX.Y.Z"
@@ -45,8 +46,7 @@ module "nwk" {
 }
 ```
 
-#### 3-tier Public / Private with High Availability
-
+#### 3-tier Public / Private with High Availability  
 ```hcl
 module "nwk" {
   source            = "git@github.com:playgroundcloud/terraform-aws-nwk.git?ref=vX.Y.Z"
@@ -58,26 +58,35 @@ module "nwk" {
 }
 ```
 
-#### Subnet By Bits Read More Here: [Additional Notes](#additional-notes)
-
+#### Subnet By Bits Read More Here: [subnet sizing](#subnet-sizing)  
 ```hcl
 module "nwk" {
   source            = "git@github.com:playgroundcloud/terraform-aws-nwk.git?ref=vX.Y.Z"
   name              = "test"
   vpc_cidr          = "10.0.0.0/16"
-  subnets_bybits    = [{ name = "App", bits = 1, net = 1 }, { name = "Front", bits = 2, net = 1 }, { name = "DB", bits = 3, net = 1 }, { name = "Admin", bits = 3, net = 0 }]
+  subnets_bybits    = [
+    { name = "App", bits = 1, net = 1 },
+    { name = "Front", bits = 2, net = 1 }, 
+    { name = "DB", bits = 3, net = 1 }, 
+    { name = "Admin", bits = 3, net = 0 }
+  ]
   availability_zone = ["eu-north-1a", "eu-north-1b", "eu-north-1c"]
 }
 ```
 
-#### Subnet By Cidr Read More Here: [Additional Notes](#additional-notes)
+#### Subnet By Cidr Read More Here: [subnet sizing](#subnet-sizing)
 
 ```hcl
 module "nwk" {
   source            = "git@github.com:playgroundcloud/terraform-aws-nwk.git?ref=vX.Y.Z"
   name              = "test"
   vpc_cidr          = "10.0.0.0/16"
-  subnets_bycidr    = [{ name = "App", cidr = "10.0.0.128/26" }, { name = "Front", cidr = "10.0.0.64/26" }, { name = "DB", cidr = "10.0.0.32/27" }, { name = "Admin", cidr = "10.0.0.0/27" }]
+  subnets_bycidr    = [
+    { name = "App", cidr = "10.0.0.128/26" },
+    { name = "Front", cidr = "10.0.0.64/26" }, 
+    { name = "DB", cidr = "10.0.0.32/27" }, 
+    { name = "Admin", cidr = "10.0.0.0/27" }
+  ]
   availability_zone = ["eu-north-1a", "eu-north-1b", "eu-north-1c"]
 }
 ```
@@ -116,7 +125,7 @@ module "nwk" {
   _Default: true_
 
 **Subnet Variables**  
-You can read up on different subnet sizing under [Additional Notes](#additional-notes)
+You can read up on different subnet sizing under [subnet sizing](#subnet-sizing).
 
 - `availability_zone` | (Required) - List(string)  
   The AZ for the subnet
@@ -124,83 +133,169 @@ You can read up on different subnet sizing under [Additional Notes](#additional-
 - `subnet_bits` | (Optional) - Number  
   _Default: -1_
 
-One of `subnets_byname`, `subnets_bybits` or `subnets_bycidr` must be used:
+One of `subnets_byname`, `subnets_bybits` or `subnets_bycidr` must be used:  
 
 - `subnets_byname` | (Required/Optional) - List(string)  
   The name of the subnets you want to create. Each name will create a new subnet. The subnets will be divided into 8 equally-sized if `subnet_bits` isn't changed.  
+  Please read more under [subnet sizing](#subnet-sizing).  
   _Default: []_
 
 - `subnets_bybits` | (Required/Optional) - List(object({name=string,bits=number,net=number}))  
   List of object to create your subnet. This will create subnet based on bits and net set by the user.  
-  Please read more under [additional notes](#additional-notes).  
-  _Default: []_
+  Please read more under [subnet sizing](#subnet-sizing).      
+  _Default: []_  
 
 - `subnets_bycidr` | (Required/Optional) - List(object({name=string,cidr=string}))  
   List of object to create your subnet. This will create subnets based cidr set by the user.  
-  Please read more under [additional notes](#additional-notes).  
-  _Default: []_
+  Please read more under [subnet sizing](#subnet-sizing).   
+  _Default: []_  
 
 - `public_subnets` | (Optional) - List(string)  
   The names of which subnets you want to set as public subnets.  
-  _Default: []_
-
-- `bastion_subnets` | (Optional) - List(string)  
-  The name of the subnet which you want to host your bastion host within.  
-  _Default: []_
-
+  _Default: []_  
+  
 **Internet Gateway**
 
 - `internet_gateway_tags` | (Optional) - Map(string)  
   Additional tags for the Internet Gateway.  
-  _Default: {}_
+  _Default: {}_  
 
 - `route_table_public_tags` | (Optional) - Map(string)  
   Additional tags for the Public Route Table.  
-  _Default: {}_
+  _Default: {}_  
 
-### Additional Notes
+**Network ACL**
 
-#### Subnet Sizing
+- `default_network_acl_ingress` | (Optional) - List(Map(String))  
+  List of maps of ingress rules to set on the Default Network ACL.
 
-There are 3 ways of specifying subnets: `subnets_byname` - a simple list; `subnets_bybits` - a list of maps with names, network numbers and bits; and `subnets_bycidr` - specifying the exact CIDR. The two first construct the subnets relative to the CIDR of the VPC regarding both size and ip-segment. The third is hard-coded.
+---
+The `default_network_acl_ingress` List of Maps accepts the following arguments:
+* `rule_no` | (Required/Optional) - String  
+  The rule number. Used for ordering.   
+  _Default: "100" & "101"_
+* `protocol` | (Required/Optional) - String  
+  The protocol to match. If using the -1 'all' protocol, you must specify a from and to port of 0.  
+  _Default: "-1"_
+* `action` | (Required/Optional) - String  
+  The action to take.  
+  _Default: "Allow"_
+* `from_port` | (Required/Optional) - String  
+  The from port to match.  
+  _Default: "0"_  
+* `to_port` | (Required/Optional) - String  
+  The to port to match.  
+  _Default: "0"_  
+* `cidr_block` | (Optional) - String  
+  The CIDR block to match. This must be a valid network mask.
+  _Default: null_
+* `ipv6_cidr_block` | (Optional) - String  
+  _Default: null_
+* `icmp_code` | (Optional) - String  
+  The ICMP type code to be used.  
+  _Default: null_  
+* `icmp_type` | (Optional) - String  
+  The ICMP type to be used.  
+  _Default: null_
+
+---
+- `default_network_acl_egress` | (Optional) - List(Map(String))  
+  List of maps of egress rules to set on the Default Network ACL. 
+  
+---
+The `default_network_acl_egress` List of Maps accepts the following arguments:  
+* `rule_no` | (Required/Optional) - String  
+  The rule number. Used for ordering.   
+  _Default: "100" & "101"_
+* `protocol` | (Required/Optional) - String  
+  The protocol to match. If using the -1 'all' protocol, you must specify a from and to port of 0.  
+  _Default: "-1"_
+* `action` | (Required/Optional) - String  
+  The action to take.  
+  _Default: "Allow"_
+* `from_port` | (Required/Optional) - String  
+  The from port to match.  
+  _Default: "0"_
+* `to_port` | (Required/Optional) - String  
+  The to port to match.  
+  _Default: "0"_
+* `cidr_block` | (Optional) - String  
+  The CIDR block to match. This must be a valid network mask.  
+  _Default: null_
+* `ipv6_cidr_block` | (Optional) - String  
+  _Default: null_
+* `icmp_code` | (Optional) - String  
+  The ICMP type code to be used.  
+  _Default: null_
+* `icmp_type` | (Optional) - String  
+  The ICMP type to be used.  
+  _Default: null_
+
+---
+
+**NAT Gateway**  
+
+* `enable_nat_gateway` | (Optional) - Bool  
+  Should be true if you want to provision NAT Gateways for each of your private networks.  
+  _Default: true_  
+  
+  
+### Subnet Sizing
+You can decide your subnet size in three different ways or in a combination of them all.  
+* `subnets_byname` - a simple list
+* `subnets_bybits` - a list of maps with names, network numbers and bits
+* `subnets_bycidr` - specifying the exact CIDR.
+
+`subnets_byname` & `subnets_bybits` creates the subnets sizes in relation to the CIDR range of the VPC, regarding both the size and ip-segment.  
+With `subnets_bycidr`, you are in full control of everything regarding your subnets sizes.
 
 #### subnets_byname
+This will create subnets that will be divided into eight equally-sized parts and subnet CIDRs.  
+To change the size of the subnets you can use `subnet_bits`, the default is three which gives 2^3 = 8 equally-sized parts and subnet CIDRs.    
+If you set `subnet_bits = 4`, it will generate 2^4 = 16 equally-sized parts and subnet CIDRs.  
 
-If you just do `subnets_byname`, then the VPC will be divided into 8 equally-sized parts and subnet CIDRs will be allocated to that. You can use `subnet_bits` to set how many additional bits used for subnets - the default is 3, which gives 2^3 = 8 subnets.
+#### subnets_bybits  
+This option gives you as a user more flexibility, but you as a user have to do some puzzle to get your size right.  
+The subnets here doesn't have to be the same size with this option.  
+To give an example:
+* 50% of the CIDR range for your servers.
+* 25% of the CIDR range for your frontend.  
+* Split the rest between admin & database.   
 
-#### subnets_bybits
-
-Here you get more flexibility, the subnets don't have to be of the same size, but you have to do the puzzle yourself.
-
-Let's say you want to use half the available space for application servers, 25% for frontend, and split the remains between database and admin hosts:  
-`subnets_bybits = [{name="App", bits=1, net=1},{name="Front", bits=2, net=1},{name="DB", bits=3, net=1},{name="Admin", bits=3, net=0}]`
-
-#### subnets_bycidr
-
-Here you specify the exact CIDR you want for each subnet, but you now need to do this specifically for each environment as they have different VPC CIDR's. Using the same layout as above, this could be.  
-`subnets_bycidr = [{name="App", cidr="10.0.0.128/26"},{name="Front", cidr="10.0.0.64/26"},{name="DB", cidr="10.0.0.32/27"},{name="Admin", cidr="10.0.0.0/27"}]`
-
-#### Adding it up
-
-Internally, maps are constructed to the subnets and their CIDR's and then the maps are merged to provide the actual map which is used to generate subnets from.  
-So, you can even combine the 3 methods if you want to. If you use the same names, then subnets defined by name will be overwritten by the two other methods, and subnets defined by bits will overwrite by subnets_bycidr.
-
-#### Network numbers and bits
-
-The diagram below tries to illustrate how additional subnet bits results in more subnets
-
+```hcl
+subnets_bybits = [
+  {name = "Servers", bits=1, net=1},
+  {name = "Front", bits=2, net=1},
+  {name = "DB", bits=3, net=1},
+  {name = "Admin", bits=3, net=0}
+]
+```
+To give more visibility we will try to illustrate this in the following picture with 2^3 = 8 equally-sized parts:  
 ![image](./picture/subnetsizes.PNG)
 
+#### subnets_bycidr  
+Here you specify the exact CIDR you want for each subnet, but you now need to do this specifically for each environment as they have different VPC CIDR's. Using the same layout as above, this could be.  
+```hcl
+subnets_bycidr = [
+  {name = "Servers", cidr="10.0.0.128/26"},
+  {name = "Front", cidr="10.0.0.64/26"},
+  {name = "DB", cidr="10.0.0.32/27"},
+  {name = "Admin", cidr="10.0.0.0/27"}
+]
+```
+
+#### Summary  
+So the logic works like following:
+Maps are created to the subnet to the subnets and their CIDR range.  
+The maps are then merged to provide the actual map, which is used to generate the subnets.  
+This means that you can combine the three methods if you want to.  
+If you use the same names, then `subnets_byname` will be overwritten by the two other methods.   
+`subnets_bybits` will be overwritten by `subnets_bycidr`.    
+
 ### Outputs
-
-`vpc`
-
-`vpc_id`
-
-`subnets`
-
-`subnet_ids`
-
-`public_route_table_id`
-
-`internet_gateway_id`
+* `vpc`
+* `vpc_id`
+* `subnets`
+* `subnet_ids`
+* `public_route_table_id`
+* `internet_gateway_id`
