@@ -1,6 +1,6 @@
-![terratest](https://github.com/playgroundcloud/terraform-aws-nwk/workflows/terratest/badge.svg)
-![terraform fmt](https://github.com/playgroundcloud/terraform-aws-nwk/workflows/terraform-fmt/badge.svg)
-![terraform validate](https://github.com/playgroundcloud/terraform-aws-nwk/workflows/terraform-validate/badge.svg)
+![terratest](https://github.com/playgroundcloud/terraform-aws-nwk/workflows/terratest/badge.svg?branch=master)
+![terraform fmt](https://github.com/playgroundcloud/terraform-aws-nwk/workflows/terraform-fmt/badge.svg?branch=master)
+![terraform validate](https://github.com/playgroundcloud/terraform-aws-nwk/workflows/terraform-validate/badge.svg?branch=master)
 
 # Terraform AWS Network
 This module can create the following components for the management of your AWS Network:  
