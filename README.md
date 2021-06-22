@@ -298,4 +298,7 @@ If you use the same names, then `subnets_byname` will be overwritten by the two 
 * `subnets`
 * `subnet_ids`
 * `public_route_table_id`
+* `private_route_table_id`
 * `internet_gateway_id`
+* `nat_gateway`
+* `nat_gateway_ids`
