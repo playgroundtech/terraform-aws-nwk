@@ -164,10 +164,14 @@ One of `subnets_byname`, `subnets_bybits` or `subnets_bycidr` must be used:
   Additional tags for the Public Route Table.  
   _Default: {}_  
 
-**Network ACL**
+**Network ACL**  
+This module can manage network ACL and rules.  
+Once a VPC is created, AWS creates the default network ACL,  
+so we copied that behaviour and made it possible to manage those rules.  
+Which wouldn't be possible otherwise.  
 
 - `default_network_acl_ingress` | (Optional) - List(Map(String))  
-  List of maps of ingress rules to set on the Default Network ACL.
+  List of maps of ingress rules to set on the Default Network ACL.  
 
 ---
 The `default_network_acl_ingress` List of Maps accepts the following arguments:
@@ -236,7 +240,8 @@ The `default_network_acl_egress` List of Maps accepts the following arguments:
 **NAT Gateway**  
 
 * `enable_nat_gateway` | (Optional) - Bool  
-  Should be true if you want to provision NAT Gateways for each of your private networks.  
+  Should be true if you want to provision NAT Gateways for each of your public subnets.  
+  This will also create appropriate routing for the private subnets, to be able to take advantage of the NAT Gateway.    
   _Default: true_  
   
   
