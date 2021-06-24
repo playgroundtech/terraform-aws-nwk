@@ -5,7 +5,7 @@ resource "aws_vpc" "main" {
   enable_dns_hostnames = var.enable_dns_hostnames
   tags = merge(
     {
-      "Name" = format("%s", var.name)
+      "Name" = format("%s-vpc", var.name)
     },
     var.vpc_tags
   )

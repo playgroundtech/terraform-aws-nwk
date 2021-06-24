@@ -7,7 +7,7 @@ module "nwk" {
   name              = var.name
   vpc_cidr          = var.vpc_cidr
   subnets_byname    = var.subnets_byname
-  bastion_subnets   = [var.bastion_subnets]
+  public_subnets    = [var.public_subnets]
   availability_zone = ["eu-north-1a"]
 }
 
@@ -15,7 +15,7 @@ resource "aws_instance" "test" {
   ami                    = "ami-0e769fbef3dc1c3b8"
   instance_type          = "t3.micro"
   key_name               = var.key_pair_name
-  subnet_id              = module.nwk.subnets[var.bastion_subnets].id
+  subnet_id              = module.nwk.subnets[var.public_subnets].id
   vpc_security_group_ids = [aws_security_group.sg.id]
 }
 resource "aws_security_group" "sg" {
@@ -42,5 +42,5 @@ output "public_instance_ip" {
 }
 
 output "bastion_subnet" {
-  value = module.nwk.subnets[var.bastion_subnets].id
+  value = module.nwk.subnets[var.public_subnets].id
 }

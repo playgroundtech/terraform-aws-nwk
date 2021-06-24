@@ -67,12 +67,6 @@ variable "public_subnets" {
   type        = list(string)
 }
 
-variable "bastion_subnets" {
-  description = "The name of the subnet which you want to host your bastion host within."
-  default     = []
-  type        = list(string)
-}
-
 # Internet Gateway
 variable "internet_gateway" {
   description = "Force creation of Internet Gateway. Only needed when no public or bastion subnets are deployed"
@@ -92,3 +86,59 @@ variable "route_table_public_tags" {
   default     = {}
 }
 
+# Default ACL
+variable "default_network_acl_ingress" {
+  description = "List of maps of ingress rules to set on the Default Network ACL"
+  type        = list(map(string))
+
+  default = [
+    {
+      rule_no    = 100
+      action     = "allow"
+      from_port  = 0
+      to_port    = 0
+      protocol   = "-1"
+      cidr_block = "0.0.0.0/0"
+    },
+    {
+      rule_no         = 101
+      action          = "allow"
+      from_port       = 0
+      to_port         = 0
+      protocol        = "-1"
+      ipv6_cidr_block = "::/0"
+    },
+  ]
+}
+
+variable "default_network_acl_egress" {
+  description = "List of maps of egress rules to set on the Default Network ACL"
+  type        = list(map(string))
+
+  default = [
+    {
+      rule_no    = 100
+      action     = "allow"
+      from_port  = 0
+      to_port    = 0
+      protocol   = "-1"
+      cidr_block = "0.0.0.0/0"
+    },
+    {
+      rule_no         = 101
+      action          = "allow"
+      from_port       = 0
+      to_port         = 0
+      protocol        = "-1"
+      ipv6_cidr_block = "::/0"
+    },
+  ]
+}
+
+# NAT Gateway
+
+variable "enable_nat_gateway" {
+  type        = bool
+  default     = true
+  description = "Should be true if you want to provision NAT Gateways for each of your public subnets"
+}
