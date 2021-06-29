@@ -15,7 +15,8 @@ This module can create the following components for the management of your AWS N
 #### Minimal  
 ```hcl
 module "nwk" {
-  source            = "git@github.com:playgroundcloud/terraform-aws-nwk.git?ref=vX.Y.Z"
+  source  = "playgroundtech/nwk/aws"
+  version = "1.0.0"
   name              = "test"
   vpc_cidr          = "10.0.0.0/16"
   subnets_byname    = ["test", "test1", "test2"]
@@ -26,7 +27,8 @@ module "nwk" {
 #### High Availability  
 ```hcl
 module "nwk" {
-  source            = "git@github.com:playgroundcloud/terraform-aws-nwk.git?ref=vX.Y.Z"
+  source  = "playgroundtech/nwk/aws"
+  version = "1.0.0"
   name              = "test"
   vpc_cidr          = "10.0.0.0/16"
   subnets_byname    = ["test", "test1", "test2"]
@@ -37,7 +39,8 @@ module "nwk" {
 #### 2-tier Public / Private with High Availability  
 ```hcl
 module "nwk" {
-  source            = "git@github.com:playgroundcloud/terraform-aws-nwk.git?ref=vX.Y.Z"
+  source  = "playgroundtech/nwk/aws"
+  version = "1.0.0"
   name              = "test"
   vpc_cidr          = "10.0.0.0/16"
   subnets_byname    = ["Front-1", "Front-2", "Front-3", "Back-1", "Back-2", "Back-3"]
@@ -49,7 +52,8 @@ module "nwk" {
 #### 3-tier Public / Private with High Availability  
 ```hcl
 module "nwk" {
-  source            = "git@github.com:playgroundcloud/terraform-aws-nwk.git?ref=vX.Y.Z"
+  source  = "playgroundtech/nwk/aws"
+  version = "1.0.0"
   name              = "test"
   vpc_cidr          = "10.0.0.0/16"
   subnets_byname    = ["Front-1", "Front-2", "Front-3", "Back-1", "Back-2", "Back-3", "DB-1", "DB-2", "DB-3"]
@@ -61,7 +65,8 @@ module "nwk" {
 #### Subnet By Bits Read More Here: [subnet sizing](#subnet-sizing)  
 ```hcl
 module "nwk" {
-  source            = "git@github.com:playgroundcloud/terraform-aws-nwk.git?ref=vX.Y.Z"
+  source  = "playgroundtech/nwk/aws"
+  version = "1.0.0"
   name              = "test"
   vpc_cidr          = "10.0.0.0/16"
   subnets_bybits    = [
@@ -78,7 +83,8 @@ module "nwk" {
 
 ```hcl
 module "nwk" {
-  source            = "git@github.com:playgroundcloud/terraform-aws-nwk.git?ref=vX.Y.Z"
+  source  = "playgroundtech/nwk/aws"
+  version = "1.0.0"
   name              = "test"
   vpc_cidr          = "10.0.0.0/16"
   subnets_bycidr    = [
