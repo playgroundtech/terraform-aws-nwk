@@ -28,8 +28,8 @@ resource "aws_nat_gateway" "ngw" {
 }
 
 resource "aws_route_table" "nat_gateway" {
-  count  = var.enable_nat_gateway == true ? 1 : 0
-  vpc_id = aws_vpc.main.id
+  for_each = var.enable_nat_gateway == true ? local.public_subnets : {}
+  vpc_id   = aws_vpc.main.id
 
   tags = merge(
     {
