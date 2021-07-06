@@ -23,7 +23,7 @@ output "public_route_table_id" {
 }
 
 output "private_route_table_id" {
-  value = try(aws_route_table.nat_gateway[0].id, "")
+  value = [for rt in aws_route_table.nat_gateway : rt.id]
 }
 
 output "internet_gateway_id" {
