@@ -2,10 +2,10 @@
 locals {
   private_subnets_list = [for subnet in local.non_public_subnets : subnet]
   # chunk private subnet list by length of public subnets
-  split_private_subnets = chunklist(
+  split_private_subnets = try(chunklist(
     [for subnet in local.non_public_subnets : aws_subnet.subnets[subnet].id],
     ceil(length(local.private_subnets_list) / length(local.public_subnets))
-  )
+  ), [])
   # create a iterable map of subnet and related route-table by split
   merged_chunk_map = flatten([
     for key, val in local.split_private_subnets : [
@@ -68,7 +68,12 @@ resource "aws_route" "nat_gateway" {
 }
 
 resource "aws_route_table_association" "nat_gateway" {
-  for_each       = var.enable_nat_gateway == true ? { for values in local.merged_chunk_map : values.subnet => values } : {}
+  for_each       = var.enable_nat_gateway == true && length(local.public_subnets) > 0 ? { for values in local.merged_chunk_map : values.subnet => values } : {}
   route_table_id = each.value.table
   subnet_id      = each.value.subnet
+
+  depends_on = [
+    aws_route_table.nat_gateway,
+    aws_subnet.subnets
+  ]
 }
