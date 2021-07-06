@@ -43,7 +43,7 @@ resource "aws_route_table" "nat_gateway" {
 
 resource "aws_route" "nat_gateway" {
   for_each               = var.enable_nat_gateway == true ? local.public_subnets : {}
-  route_table_id         = aws_route_table.nat_gateway[0].id
+  route_table_id         = aws_route_table.nat_gateway[each.key].id
   nat_gateway_id         = aws_nat_gateway.ngw[each.value].id
   destination_cidr_block = "0.0.0.0/0"
 }
