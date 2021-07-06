@@ -33,7 +33,9 @@ resource "aws_route_table" "nat_gateway" {
 
   tags = merge(
     {
-      "Name" = format("%s-rt-nat-gateway", var.name)
+      "Name" = format("%s-rt-nat-gateway-%s",
+        var.name,
+      substr(aws_nat_gateway.ngw[each.key].id, 4, 3)) // format id to get 3 random values
     },
     var.vpc_tags
   )
