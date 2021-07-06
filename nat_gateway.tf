@@ -1,3 +1,22 @@
+# Generate natgateway route-table subnet associations
+locals {
+  private_subnets_list = [for subnet in local.non_public_subnets : subnet]
+  # chunk private subnet list by length of public subnets
+  split_private_subnets = chunklist(
+    [for subnet in local.non_public_subnets : aws_subnet.subnets[subnet].id],
+    ceil(length(local.private_subnets_list) / length(local.public_subnets))
+  )
+  # create a iterable map of subnet and related route-table by split
+  merged_chunk_map = flatten([
+    for key, val in local.split_private_subnets : [
+      for v in val : {
+        table  = try(aws_route_table.nat_gateway[element(values(local.public_subnets), key)].id, "")
+        subnet = v
+      }
+    ]
+  ])
+}
+
 resource "aws_eip" "nat" {
   for_each = var.enable_nat_gateway == true ? local.public_subnets : {}
   vpc      = true
@@ -49,7 +68,7 @@ resource "aws_route" "nat_gateway" {
 }
 
 resource "aws_route_table_association" "nat_gateway" {
-  for_each       = var.enable_nat_gateway == true ? local.non_public_subnets : {}
-  route_table_id = aws_route_table.nat_gateway[0].id
-  subnet_id      = aws_subnet.subnets[each.key].id
+  for_each       = var.enable_nat_gateway == true ? { for values in local.merged_chunk_map : values.subnet => values } : {}
+  route_table_id = each.value.table
+  subnet_id      = each.value.subnet
 }
