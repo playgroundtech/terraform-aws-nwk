@@ -1,53 +1,67 @@
-resource "aws_eip" "nat" {
+# Generate nat-gateway-route-table subnet association map
+locals {
+  # chunk private subnet list by length of public subnets
+  split_private_subnets = try(chunklist(
+    [for subnet in local.non_public_subnets : subnet],
+    ceil(length(local.non_public_subnets) / length(local.public_subnets))
+  ), [])
+
+  # create a iterable map of subnets with the corresponding nat-gateway id
+  merged_chunk_map = flatten([
+    for key, val in local.split_private_subnets : [
+      for v in val : {
+        key    = element(values(local.public_subnets), key)
+        subnet = v
+      }
+    ]
+  ])
+}
+
+resource "aws_eip" "ngw" {
   for_each = var.enable_nat_gateway == true ? local.public_subnets : {}
   vpc      = true
+
+  tags = { "Name" = format("%s-eip-%s", var.name, each.key) }
 
   lifecycle {
     create_before_destroy = true
   }
 
-  tags = merge(
-    {
-      "Name" = format("%s-eip", var.name)
-    },
-    var.vpc_tags
-  )
-
 }
 
 resource "aws_nat_gateway" "ngw" {
   for_each      = var.enable_nat_gateway == true ? local.public_subnets : {}
-  allocation_id = aws_eip.nat[each.value].id
-  subnet_id     = aws_subnet.subnets[each.value].id
-  tags = merge(
-    {
-      "Name" = format("%s-nat-gateway", var.name)
-    },
-    var.vpc_tags
-  )
+  allocation_id = aws_eip.ngw[each.key].id
+  subnet_id     = aws_subnet.subnets[each.key].id
+
+  tags = { "Name" = format("%s-ngw-%s", var.name, each.key) }
+
 }
 
-resource "aws_route_table" "nat_gateway" {
-  count  = var.enable_nat_gateway == true ? 1 : 0
-  vpc_id = aws_vpc.main.id
-
-  tags = merge(
-    {
-      "Name" = format("%s-rt-nat-gateway", var.name)
-    },
-    var.vpc_tags
-  )
+resource "aws_route_table" "ngw" {
+  for_each = var.enable_nat_gateway == true ? local.public_subnets : {}
+  vpc_id   = aws_vpc.main.id
+  tags     = { "Name" = format("%s-rt-%s", var.name, each.key) }
 }
 
-resource "aws_route" "nat_gateway" {
+resource "aws_route" "ngw" {
   for_each               = var.enable_nat_gateway == true ? local.public_subnets : {}
-  route_table_id         = aws_route_table.nat_gateway[0].id
-  nat_gateway_id         = aws_nat_gateway.ngw[each.value].id
+  route_table_id         = aws_route_table.ngw[each.key].id
+  nat_gateway_id         = aws_nat_gateway.ngw[each.key].id
   destination_cidr_block = "0.0.0.0/0"
 }
 
-resource "aws_route_table_association" "nat_gateway" {
-  for_each       = var.enable_nat_gateway == true ? local.non_public_subnets : {}
-  route_table_id = aws_route_table.nat_gateway[0].id
-  subnet_id      = aws_subnet.subnets[each.key].id
+resource "aws_route_table_association" "ngw" {
+  for_each       = var.enable_nat_gateway == true ? { for v in local.merged_chunk_map : v.subnet => v } : {}
+  route_table_id = aws_route_table.ngw[each.value.key].id
+  subnet_id      = aws_subnet.subnets[each.value.subnet].id
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  depends_on = [
+    aws_route_table.ngw
+  ]
+
 }
