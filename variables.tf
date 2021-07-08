@@ -139,6 +139,6 @@ variable "default_network_acl_egress" {
 
 variable "enable_nat_gateway" {
   type        = bool
-  default     = true
+  default     = false
   description = "Should be true if you want to provision NAT Gateways for each of your public subnets"
 }
