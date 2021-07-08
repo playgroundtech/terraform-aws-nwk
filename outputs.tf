@@ -22,10 +22,6 @@ output "public_route_table_id" {
   value = try(aws_route_table.igw[0].id, "")
 }
 
-output "private_route_table_id" {
-  value = try(aws_route_table.nat_gateway[0].id, "")
-}
-
 output "internet_gateway_id" {
   value = try(aws_internet_gateway.igw[0].id, "")
 }
@@ -36,4 +32,8 @@ output "nat_gateway" {
 
 output "nat_gateway_ids" {
   value = [for nat in aws_nat_gateway.ngw : nat.id]
+}
+
+output "private_route_table_ids" {
+  value = try([for rt in aws_route_table.ngw : rt.id], "")
 }
