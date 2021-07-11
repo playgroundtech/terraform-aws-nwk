@@ -142,3 +142,9 @@ variable "enable_nat_gateway" {
   default     = false
   description = "Should be true if you want to provision NAT Gateways for each of your public subnets"
 }
+
+variable "nat_route_table" {
+  type        = bool
+  default     = false
+  description = "Should be true if you want to provision route table for NAT Gateways for each of your private subnets"
+}

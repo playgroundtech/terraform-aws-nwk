@@ -259,10 +259,12 @@ The `default_network_acl_egress` List of Maps accepts the following arguments:
 **NAT Gateway**
 
 - `enable_nat_gateway` | (Optional) - Bool  
-  Should be true if you want to provision NAT Gateways for each of your public subnets.  
-  This will also create appropriate routing for the private subnets, to be able to take advantage of the NAT Gateway.  
+  Should be true if you want to provision NAT Gateways for each of your public subnets.
   _Default: false_
 
+- `nat_route_table` | (Optional) - Bool  
+  Should be true if you want to provision route table for NAT Gateways for each of your private subnets.  
+  _Default: false_
 ### Subnet Sizing
 
 You can decide your subnet size in three different ways or in a combination of them all.

@@ -10,6 +10,8 @@ module "nwk" {
   public_subnets     = var.public_subnets
   availability_zone  = ["eu-north-1a", "eu-north-1b", "eu-north-1c"]
   enable_nat_gateway = true
+  nat_route_table    = true
+  subnet_bits        = 4
 }
 
 output "vpc_id" {
