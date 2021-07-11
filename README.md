@@ -33,7 +33,7 @@ module "nwk" {
 ```hcl
 module "nwk" {
   source            = "playgroundtech/nwk/aws"
-  version           = "1.0.0"
+  version           = "2.0.0"
   name              = "test"
   vpc_cidr          = "10.0.0.0/16"
   subnets_byname    = ["test", "test1", "test2"]
@@ -46,7 +46,7 @@ module "nwk" {
 ```hcl
 module "nwk" {
   source            = "playgroundtech/nwk/aws"
-  version           = "1.0.0"
+  version           = "2.0.0"
   name              = "test"
   vpc_cidr          = "10.0.0.0/16"
   subnets_byname    = ["Front-1", "Front-2", "Front-3", "Back-1", "Back-2", "Back-3"]
@@ -60,7 +60,7 @@ module "nwk" {
 ```hcl
 module "nwk" {
   source            = "playgroundtech/nwk/aws"
-  version           = "1.0.0"
+  version           = "2.0.0"
   name              = "test"
   vpc_cidr          = "10.0.0.0/16"
   subnets_byname    = ["Front-1", "Front-2", "Front-3", "Back-1", "Back-2", "Back-3", "DB-1", "DB-2", "DB-3"]
@@ -74,7 +74,7 @@ module "nwk" {
 ```hcl
 module "nwk" {
   source            = "playgroundtech/nwk/aws"
-  version           = "1.0.0"
+  version           = "2.0.0"
   name              = "test"
   vpc_cidr          = "10.0.0.0/16"
   subnets_bybits    = [
@@ -92,7 +92,7 @@ module "nwk" {
 ```hcl
 module "nwk" {
   source            = "playgroundtech/nwk/aws"
-  version           = "1.0.0"
+  version           = "2.0.0"
   name              = "test"
   vpc_cidr          = "10.0.0.0/16"
   subnets_bycidr    = [
