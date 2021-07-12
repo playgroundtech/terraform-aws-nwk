@@ -7,15 +7,17 @@ module "nwk" {
   name               = var.name
   vpc_cidr           = var.vpc_cidr
   subnets_byname     = var.subnets_byname
-  public_subnets     = [var.public_subnet]
+  public_subnets     = var.public_subnets
+  availability_zone  = ["eu-north-1a", "eu-north-1b", "eu-north-1c"]
   enable_nat_gateway = true
-  availability_zone  = ["eu-north-1a", "eu-north-1b"]
+  nat_route_table    = true
+  subnet_bits        = 4
 }
 
 output "vpc_id" {
   value = module.nwk.vpc_id
 }
 
-output "public_subnet" {
-  value = module.nwk.subnets[var.public_subnet].id
+output "subnet_ids" {
+  value = module.nwk.subnet_ids
 }

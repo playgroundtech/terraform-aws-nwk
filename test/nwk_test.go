@@ -106,7 +106,55 @@ func TestNwkBasic(t *testing.T) {
 	})
 }
 
+func TestNwkHA(t *testing.T) {
+	// Run test in Parallel
+	t.Parallel()
+
+	// Create a random unique ID for the VPC
+	name := random.UniqueId()
+	workingDir := "../test/nwk_ha"
+
+	defer test_structure.RunTestStage(t, "destroy", func() {
+		terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
+		terraform.Destroy(t, terraformOptions)
+		// clean up saved options
+		test_structure.CleanupTestDataFolder(t, workingDir)
+	})
+
+	test_structure.RunTestStage(t, "init", func() {
+		terraformOptions := &terraform.Options{
+			TerraformDir: workingDir,
+
+			Vars: map[string]interface{}{
+				"name":           name,
+				"vpc_cidr":       "10.0.0.0/16",
+				"subnets_byname": []string{"Front-1", "Front-2", "Front-3", "Back-1", "Back-2", "Back-3", "TGW-1", "TGW-2", "TGW-3"},
+				"public_subnets": []string{"Front-1", "Front-2", "Front-3", "Back-1", "Back-2", "Back-3"},
+			},
+		}
+		test_structure.SaveTerraformOptions(t, workingDir, terraformOptions)
+		terraform.InitAndApply(t, terraformOptions)
+	})
+
+	test_structure.RunTestStage(t, "tests", func() {
+		terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
+		// Run `terraform output` to get the value of an output variable
+		vpcId := terraform.Output(t, terraformOptions, "vpc_id")
+
+		// Get Subnets for VPC
+		subnets := aws.GetSubnetsForVpc(t, vpcId, "eu-north-1")
+
+		// Makes sure that all the subnets created is associated with the vpc, no more or less should be attached to it.
+		require.Equal(t, 9, len(subnets))
+
+		terraform.ApplyAndIdempotent(t, terraformOptions)
+	})
+}
+
 func TestNwkBastion(t *testing.T) {
+	// Run test in Parallel
+	t.Parallel()
+
 	// Create ssh key-pair
 	uniqueID := random.UniqueId()
 	keyPairName := fmt.Sprintf("terratest-ssh-example-%s", uniqueID)
@@ -198,6 +246,9 @@ func TestNwkByBits(t *testing.T) {
 }
 
 func TestNwkByCidr(t *testing.T) {
+	// Run test in Parallel
+	t.Parallel()
+
 	// Create a random unique ID for the VPC
 	name := random.UniqueId()
 	workingDir := "../test/nwk_bycidr"
@@ -239,6 +290,9 @@ func TestNwkByCidr(t *testing.T) {
 }
 
 func TestNwkPublicSubnet(t *testing.T) {
+	// Run test in Parallel
+	t.Parallel()
+
 	// Create a random unique ID for the VPC
 	name := random.UniqueId()
 	// AWS Region
@@ -281,6 +335,9 @@ func TestNwkPublicSubnet(t *testing.T) {
 }
 
 func TestNwkDenyAllACL(t *testing.T) {
+	// Run test in Parallel
+	t.Parallel()
+
 	// Create a random unique ID for the VPC
 	name := random.UniqueId()
 	// AWS Region

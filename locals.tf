@@ -22,4 +22,28 @@ locals {
   ))
   public_subnets     = { for net in keys(local.subnet_to_map) : net => net if contains(var.public_subnets, net) == true }
   non_public_subnets = { for net in keys(local.subnet_to_map) : net => net if contains(var.public_subnets, net) != true }
+
+  # Generate nat-gateway-route-table subnet association map
+
+  # get az of public subnets and remove duplicated azs
+  nat_az = distinct([for k, v in [for subnet in local.public_subnets : subnet] : element(var.availability_zone, k)])
+
+  # gen new map of public subnets and don exceed amount of azs
+  nat_subnets = { for key, val in local.nat_az : element([for i in local.public_subnets : i], key) => element([for i in local.public_subnets : i], key) }
+
+  # chunk private subnet list by length of nat_subnets 
+  split_private_subnets = try(chunklist(
+    [for subnet in local.non_public_subnets : subnet],
+    ceil(length(local.non_public_subnets) / length(local.nat_subnets))
+  ), [])
+
+  # create a iterable map of subnets with the corresponding nat-gateway id
+  merged_chunk_map = flatten([
+    for key, val in local.split_private_subnets : [
+      for v in val : {
+        key    = element(keys(local.nat_subnets), key)
+        subnet = v
+      }
+    ]
+  ])
 }

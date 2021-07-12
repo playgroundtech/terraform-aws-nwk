@@ -139,6 +139,12 @@ variable "default_network_acl_egress" {
 
 variable "enable_nat_gateway" {
   type        = bool
+  default     = false
+  description = "Should be true if you want to provision NAT Gateways for each of your chosen availability zones"
+}
+
+variable "nat_route_table" {
+  type        = bool
   default     = true
-  description = "Should be true if you want to provision NAT Gateways for each of your public subnets"
+  description = "Should be true if you want to provision route table for NAT Gateways for each of your chosen availability zones"
 }
