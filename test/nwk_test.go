@@ -129,7 +129,7 @@ func TestNwkHA(t *testing.T) {
 				"name":           name,
 				"vpc_cidr":       "10.0.0.0/16",
 				"subnets_byname": []string{"Front-1", "Front-2", "Front-3", "Back-1", "Back-2", "Back-3", "TGW-1", "TGW-2", "TGW-3"},
-				"public_subnets": []string{"Front-1", "Front-2", "Front-3"},
+				"public_subnets": []string{"Front-1", "Front-2", "Front-3", "Back-1", "Back-2", "Back-3"},
 			},
 		}
 		test_structure.SaveTerraformOptions(t, workingDir, terraformOptions)
