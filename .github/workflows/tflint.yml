@@ -1,0 +1,40 @@
+name: TFlint
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  tflint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Cache plugin dir
+        # Caches installed tflint plugins and uses the hash of the config file as the key.
+        # If the content of the config file changes the plugins will be re-initiated.
+        id: cache-plugin
+        uses: actions/cache@v2
+        with:
+          path: ~/.tflint.d/plugins
+          key: tflint-${{ hashFiles('.tflint.hcl') }}
+
+      - name: Setup TFlint
+        uses: terraform-linters/setup-tflint@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Init TFlint
+        # Run init if no cache hit.
+        if: steps.cache-plugin.outputs.cache-hit != 'true'
+        run: tflint --init
+
+      - name: Set Workspace
+        # Workspace is set by creating a dummy "environment" file.
+        run: |
+          mkdir .terraform
+          echo "dev" >> .terraform/environment
+
+      - name: Run TFlint
+        run: tflint -f compact
