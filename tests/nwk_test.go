@@ -3,7 +3,7 @@
 // NO tests in this testsuite can be runned in Parallel due to number of VPC constraints.
 // Therefore there is no t.Parallel() function in this test-suite.
 
-package test
+package tests
 
 import (
 	"fmt"
@@ -64,7 +64,7 @@ func testSSHAgentToPublicHost(t *testing.T, terraformOptions *terraform.Options,
 func TestNwkBasic(t *testing.T) {
 	// Create a random unique ID for the VPC
 	name := random.UniqueId()
-	workingDir := "../test/nwk_basic"
+	workingDir := "../tests/nwk_basic"
 
 	defer test_structure.RunTestStage(t, "destroy", func() {
 		terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
@@ -112,7 +112,7 @@ func TestNwkHA(t *testing.T) {
 
 	// Create a random unique ID for the VPC
 	name := random.UniqueId()
-	workingDir := "../test/nwk_ha"
+	workingDir := "../tests/nwk_ha"
 
 	defer test_structure.RunTestStage(t, "destroy", func() {
 		terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
@@ -164,7 +164,7 @@ func TestNwkBastion(t *testing.T) {
 	name := random.UniqueId()
 	// AWS Region
 	awsRegion := "eu-north-1"
-	workingDir := "../test/nwk_bastion_host"
+	workingDir := "../tests/nwk_bastion_host"
 
 	defer test_structure.RunTestStage(t, "destroy", func() {
 		terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
@@ -178,11 +178,11 @@ func TestNwkBastion(t *testing.T) {
 			TerraformDir: workingDir,
 
 			Vars: map[string]interface{}{
-				"name":            name,
-				"vpc_cidr":        "10.0.0.0/16",
-				"subnets_byname":  []string{"test-bastion-nwk-one", "test-bastion-nwk-two", "test-basic-bastion-three", "test-basic-bastion-four", "test-basic-bastion-five"},
+				"name":           name,
+				"vpc_cidr":       "10.0.0.0/16",
+				"subnets_byname": []string{"test-bastion-nwk-one", "test-bastion-nwk-two", "test-basic-bastion-three", "test-basic-bastion-four", "test-basic-bastion-five"},
 				"public_subnets": "test-bastion-nwk-one",
-				"key_pair_name":   keyPairName,
+				"key_pair_name":  keyPairName,
 			},
 		}
 		test_structure.SaveTerraformOptions(t, workingDir, terraformOptions)
@@ -208,7 +208,7 @@ func TestNwkBastion(t *testing.T) {
 func TestNwkByBits(t *testing.T) {
 	// Create a random unique ID for the VPC
 	name := random.UniqueId()
-	workingDir := "../test/nwk_bybits"
+	workingDir := "../tests/nwk_bybits"
 
 	defer test_structure.RunTestStage(t, "destroy", func() {
 		terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
@@ -251,7 +251,7 @@ func TestNwkByCidr(t *testing.T) {
 
 	// Create a random unique ID for the VPC
 	name := random.UniqueId()
-	workingDir := "../test/nwk_bycidr"
+	workingDir := "../tests/nwk_bycidr"
 
 	defer test_structure.RunTestStage(t, "destroy", func() {
 		terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
@@ -297,7 +297,7 @@ func TestNwkPublicSubnet(t *testing.T) {
 	name := random.UniqueId()
 	// AWS Region
 	awsRegion := "eu-north-1"
-	workingDir := "../test/nwk_public_subnets"
+	workingDir := "../tests/nwk_public_subnets"
 	defer test_structure.RunTestStage(t, "destroy", func() {
 		terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
 		terraform.Destroy(t, terraformOptions)
@@ -342,7 +342,7 @@ func TestNwkDenyAllACL(t *testing.T) {
 	name := random.UniqueId()
 	// AWS Region
 	awsRegion := "eu-north-1"
-	workingDir := "../test/nwk_deny_all_acl"
+	workingDir := "../tests/nwk_deny_all_acl"
 	defer test_structure.RunTestStage(t, "destroy", func() {
 		terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
 		terraform.Destroy(t, terraformOptions)
